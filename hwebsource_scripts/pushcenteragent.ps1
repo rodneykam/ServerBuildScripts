@@ -1,0 +1,412 @@
+﻿param (
+	[string] $release,					# Code version e.g. 10.1.0.12345
+	[switch] $unzipcode = $true,
+	[string] $corpsiterelease = $null,
+	[switch] $unzipcorpsite = $true,
+	[string] $serviceUser,
+	[string] $servicePassword,
+	[string] $domainHostName,			# Pool name - e.g. "SCLUST.RELAYHEALTH.COM"
+	[string] $scheduledUser,
+	[string] $scheduledPassword,
+	[switch] $whitelistFlag = $false,	# Flag used to enable whitelist
+	[switch] $isProduction,				# Flag used to disable testing/simulator services on production systems
+	[switch] $NoDatabase = $false,				# Flag used when databsae is not present
+	[bool]	 $isAutoDeploy = $false,		# Flag to indicate deploy.ps1 is being called from Auto Deployment Site
+	$credentials  #Contains Credential structure:  @{type = "" ; identifier = "" ; username = "" ; password = ""},@{...}
+)
+
+import-module WebAdministration -errorAction SilentlyContinue
+import-module ServerManager -errorAction SilentlyContinue
+
+$ErrorActionPreference = "stop"
+
+write-host -foregroundcolor GREEN "===================================="
+write-host -foregroundcolor GREEN "=         Start deployment         ="
+write-host -foregroundcolor GREEN "===================================="
+write-host -foregroundcolor GREEN "starting PushCenterAgent.ps1"
+
+&{#TRY
+	pushd E:\RelayHealth\Deployhelp
+	
+Function logstamp {
+$now=get-Date
+$yr=$now.Year.ToString()
+$mo=$now.Month.ToString()
+$dy=$now.Day.ToString()
+$hr=$now.Hour.ToString()
+$mi=$now.Minute.ToString()
+if ($mo.length -lt 2) {
+$mo="0"+$mo #pad single digit months with leading zero
+}
+if ($dy.length -lt 2) {
+$dy="0"+$dy #pad single digit day with leading zero
+}
+if ($hr.length -lt 2) {
+$hr="0"+$hr #pad single digit hour with leading zero
+}
+if ($mi.length -lt 2) {
+$mi="0"+$mi #pad single digit minute with leading zero
+}
+write-output $yr$mo$dy$hr$mi
+}
+
+
+function RunDbQuery($connstring,$dbquery)
+{
+	$conn = new-object "System.data.sqlclient.SQLconnection"
+	
+	$conn.ConnectionString = ("$connstring")
+	$conn.open()
+	
+	$sqlcmd = new-object "System.data.sqlclient.SQLcommand"
+	$sqlcmd.connection = $conn
+	$sqlcmd.commandTimeout = 600000
+	$sqlcmd.commandText = "$dbQuery"
+	$sqlcmd.ExecuteNonQuery()
+	
+
+}
+
+
+function RunDbQueryScalar($connstring,$dbquery)
+{
+	$conn = new-object "System.data.sqlclient.SQLconnection"
+	
+	$conn.ConnectionString = ("$connstring")
+	$conn.open()
+	
+	$sqlcmd = new-object "System.data.sqlclient.SQLcommand"
+	$sqlcmd.connection = $conn
+	$sqlcmd.commandTimeout = 600000
+	$sqlcmd.commandText = "$dbQuery"
+	$sqlcmd.ExecuteScalar()
+	
+
+}
+
+function RunDbQueryReader($connstring,$dbquery)
+{
+	$conn = new-object "System.data.sqlclient.SQLconnection"
+	
+	$conn.ConnectionString = ("$connstring")
+	$conn.open()
+	
+	$sqlcmd = new-object "System.data.sqlclient.SQLcommand"
+	$sqlcmd.connection = $conn
+	$sqlcmd.commandTimeout = 600000
+	$sqlcmd.commandText = "$dbQuery"
+	
+	
+	$reader =$sqlcmd.ExecuteReader()
+	while ($reader.read()) {
+	$reader.GetValue(0) # gets the value for the first column in the query
+	}
+ 
+	
+
+}
+
+function RunDbQueryReader2clm($connstring,$dbquery)
+{
+	$conn = new-object "System.data.sqlclient.SQLconnection"
+	
+	$conn.ConnectionString = ("$connstring")
+	$conn.open()
+	
+	$sqlcmd = new-object "System.data.sqlclient.SQLcommand"
+	$sqlcmd.connection = $conn
+	$sqlcmd.commandTimeout = 600000
+	$sqlcmd.commandText = "$dbQuery"
+	
+	
+	$reader =$sqlcmd.ExecuteReader()
+	while ($reader.read()) {
+	$reader.GetValue(0) # gets the value for the first column in the query
+	$reader.GetValue(1) 
+	}
+ 
+	
+
+}
+
+function WaitProcessJobs ($jobs)
+{
+		write-host "Parallel Deploy out of loop 1"
+		#Get-Job
+		(Get-Job).count
+		(Get-Job -State Running).count
+		
+		wait-job -job  $jobs
+
+		write-host "Parallel Deploy out of loop 3"
+		$failedjobs =@()
+		$successjobs =@() 	
+		foreach ($job in $jobs)
+		{
+			$jfname = $job.name
+
+			if($job.state -eq 'Failed')
+			{
+				$jf
+				Write-Host -f BLUE "##################################################################################"
+				Write-Host -f BLUE "###                  Job $jfName Final Display Started                          ###"
+				Write-Host -f BLUE "##################################################################################"
+				receive-job $job -ea continue
+				write-host ($job.ChildJobs[0].JobStateInfo.Reason.Message) -ForegroundColor Yellow
+				
+				$failedjobs += $jfname 
+				Write-Host -f BLUE "##################################################################################"
+				Write-Host -f BLUE "###                  Job $jfName Final Display Stopped	                   ###"
+				Write-Host -f BLUE "##################################################################################"
+				remove-job -job $job 
+			}
+			else
+			{
+				Write-Host -f BLUE "##################################################################################"
+				Write-Host -f BLUE "###                  Job $jfName Final Display started                          ###"
+				Write-Host -f BLUE "##################################################################################"
+				receive-job $job -ea continue
+				
+				$successjobs += $jfname 
+				Write-Host -f BLUE "##################################################################################"
+				Write-Host -f BLUE "###                  Job $jfName Final Display Stopped	                   ###"
+				Write-Host -f BLUE "##################################################################################"
+				#write-host (receive-job $job) -ForegroundColor Green -ea silentlycontinue
+				remove-job -job $job
+			}
+
+
+		}
+
+		write-host "Following jobs have been successful"
+		$successjobs
+
+		write-host "Following jobs have failed"
+		$Failedjobs
+			
+		get-job |remove-job
+		
+} 
+
+function ProcessJobs ($jobs)
+{
+		write-host "Parallel Deploy out of loop 1"
+		#Get-Job
+		(Get-Job).count
+		(Get-Job -State Running).count
+		
+		while(Get-Job -State Running)
+		{
+			foreach ($job in $jobs)
+			{
+				$jName = $job.Name
+				Write-Host -f BLUE "##################################################################################"
+				Write-Host -f BLUE "###                  Job $jName Display has Started                            ###"
+				Write-Host -f BLUE "##################################################################################"
+				
+				receive-job $job -ea continue
+				
+				Write-Host -f BLUE "##################################################################################"
+				Write-Host -f BLUE "###                  Job $jName Display has Stopped                            ###"
+				Write-Host -f BLUE "##################################################################################"
+				
+				
+			}
+			write-host "Parallel Deploy in the loop 2"
+		#	Get-Job | ? {$_.State -eq 'running'} | % {Receive-Job -keep $_}
+			start-sleep -seconds 15
+		}
+		# wait-job -job  $jobs
+		write-host "Parallel Deploy out of loop 3"
+		$failedjobs =@()
+		$successjobs =@() 	
+		foreach ($job in $jobs)
+		{
+			$jfname = $job.name
+
+			if($job.state -eq 'Failed')
+			{
+				$jf
+				Write-Host -f BLUE "##################################################################################"
+				Write-Host -f BLUE "###                  Job $jfName Final Display Started                          ###"
+				Write-Host -f BLUE "##################################################################################"
+				receive-job $job -ea continue
+				write-host ($job.ChildJobs[0].JobStateInfo.Reason.Message) -ForegroundColor Yellow
+				
+				$failedjobs += $jfname 
+				Write-Host -f BLUE "##################################################################################"
+				Write-Host -f BLUE "###                  Job $jfName Final Display Stopped	                   ###"
+				Write-Host -f BLUE "##################################################################################"
+				remove-job -job $job 
+			}
+			else
+			{
+				Write-Host -f BLUE "##################################################################################"
+				Write-Host -f BLUE "###                  Job $jfName Final Display started                          ###"
+				Write-Host -f BLUE "##################################################################################"
+				receive-job $job -ea continue
+				
+				$successjobs += $jfname 
+				Write-Host -f BLUE "##################################################################################"
+				Write-Host -f BLUE "###                  Job $jfName Final Display Stopped	                   ###"
+				Write-Host -f BLUE "##################################################################################"
+				#write-host (receive-job $job) -ForegroundColor Green -ea silentlycontinue
+				remove-job -job $job
+			}
+
+
+		}
+
+		write-host "Following jobs have been successful"
+		$successjobs
+
+		write-host "Following jobs have failed"
+		$Failedjobs
+			
+		get-job |remove-job
+		
+} 
+	
+	$buildnumberandtype =@()
+	
+	$now=logstamp
+	
+	if (!(test-path E:\RelayHealth\logs\PushCenterLogs))
+		{
+			New-Item -ItemType Directory -Force -Path E:\RelayHealth\logs\PushCenterLogs
+		}
+	
+	$PushCenterLogPath= "E:\RelayHealth\logs\PushCenterLogs\PushCenter"+"$now"+"log.log"
+
+	
+	try
+	{
+		start-transcript -path $PushCenterLogPath 
+	}
+	catch
+	{
+		stop-transcript 
+		start-transcript -path $PushCenterLogPath 
+					
+	}
+
+	$buildtypes = 
+	@(
+		@{name="Applications";deployhelp="RelayHealthDeployHelp"},
+		@{name="InteropApplications";deployhelp="InteropApplicationsDeployHelp"},
+		@{name="HydroPlatform";deployhelp="HydroPlatformDeployHelp"},
+		@{name="Verification";deployhelp="VerificationDeployHelp"}
+	)
+	
+    	write-host -foregroundcolor GREEN "Push Center agent has Started"
+	
+	[string] $connstring = "Data Source=SJMGDPP01;user id=pushuser;password=Kk4~6J.ey8Q#+P;Initial Catalog=Pushcenter;"
+	
+	[string] $dbquery = "Select [buildnumber],[deploytype] From [PushCenter].[dbo].[DeployQueue] where [ServerName]=`'MachineName`' and [deploystatus]=`'1`' and [priority]=`'0`' "
+	
+	
+	$buildnumberandtype = RunDbQueryReader2clm $connstring $dbquery 
+	
+	write-host -foregroundcolor GREEN "build number and type is $buildnumberandtype"
+	
+	schtasks /change /disable  /tn "RequeuedErroredMessages"
+	
+	if ($buildnumberandtype -ne $null)
+	{
+		$release = $buildnumberandtype[0]
+		if ($buildnumberandtype[1] -eq "unzip")
+		{
+			
+			write-host -foregroundcolor GREEN "Build number is availble updating deploystatus to 2"
+			
+			[string] $dbquery = "Update [PushCenter].[dbo].[DeployQueue] SET [deploystatus]=`'2`' Where [ServerName]=`'MachineName`' and [deploystatus]=`'1`' and [deploytype]=`'unzip`' and [buildnumber]=`'$release`'"
+			
+			RunDbQuery $connstring $dbquery 
+			
+			
+			
+			[string] $dbquery = "Select [deploystatus] From [PushCenter].[dbo].[DeployQueue] where [ServerName]=`'MachineName`' and [deploystatus]=`'2`' and [buildnumber]=`'$release`' "
+			$unzipstart = RunDbQueryReader $connstring $dbquery
+			
+				
+			if ( $unzipstart -eq "2")
+			{
+				
+				$jobs = @()	
+				
+				get-job |remove-job
+
+				write-host -foregroundcolor GREEN "starting Unzip step"
+				Copy-Item "E:\RelayHealth\Deployhelp\unzip.version.ps1" "E:\RelayHealth\"
+				pushd E:\RelayHealth\
+				
+				foreach ($buildtype in $buildtypes)
+				{
+					$scriptblock  = 
+					{
+					param ($release,$AppRoot,$LocalScripts)
+					
+					write-host -foregroundcolor GREEN "Unzip $AppRoot files and  $LocalScripts with  build number $release" 
+
+					E:\RelayHealth\unzip.version.ps1 -rhver $release -AppRoot $AppRoot  -Localscripts $LocalScripts | out-host
+					
+					}
+					
+					$jobs += start-job -scriptblock $scriptblock -arg $release,$buildtype.name,$buildtype.deployhelp
+				
+				}
+				
+				waitProcessJobs $jobs
+				
+				popd
+				
+				write-host -foregroundcolor GREEN "Unzip step has completed"
+			
+				[string] $dbquery = "Update [PushCenter].[dbo].[DeployQueue] SET [deploystatus]=`'3`' Where [ServerName]=`'MachineName`' and [deploystatus]=`'2`' and [deploytype]=`'unzip`' and [buildnumber]=`'$release`'"
+			
+				RunDbQuery $connstring $dbquery 
+			
+			}
+			else
+			{
+				write-host -foregroundcolor yellow "Error: Deploy Status could not be updated"
+				
+				[string] $dbquery = "Update [PushCenter].[dbo].[DeployQueue] SET [deploystatus]=`'4`' Where [ServerName]=`'MachineName`' and [deploystatus]=`'1`' and [deploytype]=`'unzip`' and [buildnumber]=`'$release`'"
+			
+				RunDbQuery $connstring $dbquery 
+			
+			
+			}
+			
+			
+		}
+		
+		schtasks /change /enable  /tn "RequeuedErroredMessages"
+	}
+    else
+    {
+  
+	write-host -foregroundcolor yellow "Push CenterDB has no scheduled Unzip Step"
+        			#invoke-command  -scriptblock {E:\RelayHealth\unzip.version.ps1 14.8.1.118027 InteropApplications InteropApplicationsDeployHelp}  
+    
+    }
+	
+	
+	
+	popd
+	
+	
+}
+trap [Exception] #CATCH
+{
+	#[string] $dbquery = "Update [PushCenter].[dbo].[DeployQueue] SET [deploystatus]=`'9`' Where [ServerName]=`'MachineName`' and [deploytype]=`'unzip`' and [buildnumber]=`'$release`'"
+			
+			#RunDbQuery $connstring $dbquery 
+	throw $(" ERROR during Code Deployment / IIS Configuration  " + $_.Exception.Message)
+	popd
+	Exit -1
+}
+write-host -foregroundcolor GREEN "end of PushCenterAgent.ps1"
+write-host -foregroundcolor GREEN "===================================="
+write-host -foregroundcolor GREEN "=        Deployment Complete       ="
+write-host -foregroundcolor GREEN "===================================="

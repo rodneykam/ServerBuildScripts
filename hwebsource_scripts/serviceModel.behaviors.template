@@ -1,0 +1,183 @@
+<!DOCTYPE diagnostics SYSTEM "..\..\..\..\..\config\environment.dtd">
+<behaviors>
+  <endpointBehaviors>
+    <behavior name="RelayIdentityBehavior">
+      <RelayIdentityBehaviorExtension forceSystemIdentity="false" enableLegacyIdentity="true"/>
+      <dataContractSerializer maxItemsInObjectGraph="128000" />
+    </behavior>
+    <behavior name="InteropMessageInspectorBehavior">
+      <RelayIdentityBehaviorExtension forceSystemIdentity="false" enableLegacyIdentity="true"/>
+      <dataContractSerializer maxItemsInObjectGraph="128000" />
+    </behavior>
+    <behavior name="MaxDataGraphBehavior">
+      <RelayIdentityBehaviorExtension forceSystemIdentity="false" enableLegacyIdentity="true"/>
+      <dataContractSerializer maxItemsInObjectGraph="2147483647"/>
+    </behavior>
+    <behavior name="MaxDataGraphOnly">
+      <dataContractSerializer maxItemsInObjectGraph="2147483647"/>
+    </behavior>
+    <behavior name="RelayLoggingBehavior">
+      <RelayLogging  />
+      <dataContractSerializer maxItemsInObjectGraph="2147483647"/>
+    </behavior>
+    <behavior name="RelayLoggingBehaviorWithMustUnderstand">
+      <RelayLogging  />
+      <validateMustUnderstand validate="false" />
+      <dataContractSerializer maxItemsInObjectGraph="2147483647"/>
+    </behavior>
+  </endpointBehaviors>
+
+  <serviceBehaviors>
+    <behavior name="InteropServiceTypeBehaviors"
+              returnUnknownExceptionsAsFaults="true">
+      <serviceMetadata
+                       httpsGetEnabled="true"/>
+      <serviceDebug includeExceptionDetailInFaults="true"/>
+      <serviceThrottling maxConcurrentCalls="6400"
+                         maxConcurrentSessions="10000"/>
+      <dataContractSerializer maxItemsInObjectGraph="128000"/>
+    </behavior>
+
+    <behavior name="XdsMessageSecurityBehavior">
+      <serviceAuthorization
+        serviceAuthorizationManagerType="RelayHealth.Interop.Services.XDS.XdsAuthorizationManager, RelayHealth.Interop.Services.ServiceContracts"/>
+      <serviceMetadata   />
+      <serviceCredentials>
+        <clientCertificate>
+          <authentication certificateValidationMode="ChainTrust" revocationMode="NoCheck" />
+        </clientCertificate>
+        <serviceCertificate findValue="pshah-t5500 Server Machine2" x509FindType="FindBySubjectName" storeLocation="LocalMachine" storeName="My" />
+      </serviceCredentials>
+    </behavior>
+
+    <behavior name="XdsTransportWithMessageSecurityBehavior">
+      <serviceAuthorization principalPermissionMode="Custom" serviceAuthorizationManagerType="RelayHealth.Interop.Services.XDS.XdsAuthorizationManager, RelayHealth.Interop.Services.ServiceContracts" />
+      <serviceMetadata httpsGetEnabled="true" />
+      <serviceDebug includeExceptionDetailInFaults="true" />
+      <serviceThrottling maxConcurrentCalls="6400" maxConcurrentSessions="10000" />
+      <dataContractSerializer maxItemsInObjectGraph="128000" />
+      <serviceCredentials>
+        <clientCertificate>
+          <authentication trustedStoreLocation="LocalMachine" revocationMode="Online" />
+        </clientCertificate>
+      </serviceCredentials>
+    </behavior>
+
+    <behavior name="IHEXCPDServiceBehavior">
+      <serviceAuthorization principalPermissionMode="Custom"
+        serviceAuthorizationManagerType="RelayHealth.Interop.Services.IHE.XCPD.XCPDServiceAuthorizationManager, RelayHealth.Interop.Services.ServiceContracts" />
+      <serviceMetadata httpGetEnabled="false" httpsGetEnabled="true"/>
+      <serviceDebug includeExceptionDetailInFaults="true" />
+      <serviceThrottling maxConcurrentCalls="6400" maxConcurrentSessions="10000" />
+      <dataContractSerializer maxItemsInObjectGraph="128000" />
+      <serviceCredentials>
+        <clientCertificate>
+          <authentication trustedStoreLocation="LocalMachine" revocationMode="Online" />
+        </clientCertificate>
+      </serviceCredentials>
+    </behavior>
+
+    <behavior name="IHEXDSbServiceBehavior">
+      <serviceAuthorization principalPermissionMode="Custom"
+        serviceAuthorizationManagerType="RelayHealth.Interop.Services.IHE.XDS.XDSbServiceAuthorizationManager, RelayHealth.Interop.Services.ServiceContracts" />
+      <serviceMetadata httpGetEnabled="false" httpsGetEnabled="true"/>
+      <serviceDebug includeExceptionDetailInFaults="true" />
+      <serviceThrottling maxConcurrentCalls="6400" maxConcurrentSessions="10000" />
+      <dataContractSerializer maxItemsInObjectGraph="128000" />
+      <serviceCredentials>
+        <clientCertificate>
+          <authentication trustedStoreLocation="LocalMachine" revocationMode="Online" />
+        </clientCertificate>
+      </serviceCredentials>
+    </behavior>
+
+    <behavior name="IHEXCAGatewayServiceBehavior">
+      <serviceAuthorization principalPermissionMode="Custom"
+         serviceAuthorizationManagerType="RelayHealth.Interop.Services.IHE.XCA.XCAGatewayServiceAuthorizationManager, RelayHealth.Interop.Services.ServiceContracts" />
+      <serviceMetadata httpGetEnabled="false" httpsGetEnabled="true"/>
+      <serviceDebug includeExceptionDetailInFaults="true" />
+      <serviceThrottling maxConcurrentCalls="6400" maxConcurrentSessions="10000" />
+      <dataContractSerializer maxItemsInObjectGraph="128000" />
+      <serviceCredentials>
+        <clientCertificate>
+          <authentication trustedStoreLocation="LocalMachine" revocationMode="Online" />
+        </clientCertificate>
+      </serviceCredentials>
+    </behavior>
+
+    <behavior name="IHEXCAGatewayServiceBehaviorNew">
+      <serviceAuthorization principalPermissionMode="Custom"
+         serviceAuthorizationManagerType="RelayHealth.Interop.Services.IHE.XCA.New.XCAGatewayServiceAuthorizationManager, RelayHealth.Interop.Services.ServiceContracts" />
+      <serviceMetadata httpGetEnabled="false" httpsGetEnabled="true"/>
+      <serviceDebug includeExceptionDetailInFaults="true" />
+      <serviceThrottling maxConcurrentCalls="6400" maxConcurrentSessions="10000" />
+      <dataContractSerializer maxItemsInObjectGraph="128000" />
+      <serviceCredentials>
+        <clientCertificate>
+          <authentication trustedStoreLocation="LocalMachine" revocationMode="Online" />
+        </clientCertificate>
+      </serviceCredentials>
+    </behavior>
+
+    <behavior name="ClientCertificateAuthorizationTransportWithMessageSecurityBehavior">
+      <serviceAuthorization
+        principalPermissionMode="Custom"
+        serviceAuthorizationManagerType="RelayHealth.Interop.Services.ClientCertificateAssigningAuthorityAuthorizationManager, RelayHealth.Interop.Services.ServiceContracts" />
+      <serviceMetadata httpsGetEnabled="true" />
+      <serviceDebug includeExceptionDetailInFaults="true" />
+      <serviceThrottling maxConcurrentCalls="6400" maxConcurrentSessions="10000" />
+      <dataContractSerializer maxItemsInObjectGraph="128000" />
+      <serviceCredentials>
+        <clientCertificate>
+          <authentication trustedStoreLocation="LocalMachine" revocationMode="Online" />
+        </clientCertificate>
+      </serviceCredentials>
+    </behavior>
+
+    <behavior name="IMSTransferBehavior">
+      <serviceAuthorization
+        serviceAuthorizationManagerType="RelayHealth.Interop.Services.IMSTransfer.IMSTransferAuthorizationManager, RelayHealth.Interop.Services.ServiceContracts" />
+      <serviceMetadata httpsGetEnabled="true" />
+      <serviceDebug includeExceptionDetailInFaults="true" />
+      <serviceThrottling maxConcurrentCalls="6400" maxConcurrentSessions="10000" />
+      <dataContractSerializer maxItemsInObjectGraph="128000" />
+      <serviceCredentials>
+        <clientCertificate>
+          <authentication trustedStoreLocation="LocalMachine" revocationMode="Online" />
+        </clientCertificate>
+      </serviceCredentials>
+    </behavior>
+
+    <behavior name="PDQTransportWithMessageSecurityBehavior">
+      <serviceAuthorization
+        serviceAuthorizationManagerType="RelayHealth.Interop.Services.PDQ.PDQAuthorizationManager, RelayHealth.Interop.Services.ServiceContracts" />
+      <serviceMetadata httpsGetEnabled="true" />
+      <serviceDebug includeExceptionDetailInFaults="true" />
+      <serviceThrottling maxConcurrentCalls="6400" maxConcurrentSessions="10000" />
+      <dataContractSerializer maxItemsInObjectGraph="128000" />
+      <serviceCredentials>
+        <clientCertificate>
+          <authentication trustedStoreLocation="LocalMachine" revocationMode="Online" />
+        </clientCertificate>
+      </serviceCredentials>
+    </behavior>
+
+    <!-- This Service Behavior pulls in the Custom Authentication code that sets the RelayIdentity
+         on the WCF thread context so that the SwitchBoard may be evaluated -->
+    <behavior name="InteropServiceWithRelayPrincipal" returnUnknownExceptionsAsFaults="true">
+      <serviceMetadata httpsGetEnabled="true"/>
+      <serviceDebug includeExceptionDetailInFaults="true"/>
+      <serviceThrottling maxConcurrentCalls="6400"
+                         maxConcurrentSessions="10000"/>
+      <dataContractSerializer maxItemsInObjectGraph="128000"/>
+      <serviceAuthorization principalPermissionMode="Custom">
+        <authorizationPolicies>
+          <add policyType="RelayHealth.Interop.Services.ServiceModel.RelayPrincipalBehavior,
+                           RelayHealth.Interop.Services.ServiceModel" />
+        </authorizationPolicies>
+      </serviceAuthorization>
+    </behavior>
+
+  </serviceBehaviors>
+
+</behaviors>

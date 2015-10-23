@@ -1,0 +1,123 @@
+<!--
+This file specifies rules that block metrics from being processed by the DSA or
+reported to the SMP.  Data adapters still discover metrics blocked by these
+rules, but they do not report metric data to the DSA, the DSA does not notify
+the SMP about the metrics, and the metrics do not appear in the user interface.
+
+You must restart the DSA changes to this file to take effect.  (Data adapters
+do not require a restart.)  The DSA writes the names of blocked metrics and the
+rules that blocked them to the file ..\log\DSA_blocked_metrics.txt.  In
+addition, the DSA log file (..\log\DSA.txt) contains additional details.
+
+There are two types of rules, specified as <quota /> and <nocollect /> XML
+elements.  Both types specify a metric filter string that controls which
+metrics the rule applies to.
+
+<quota /> rules allow new metrics that match the filter string, up to a maximum
+number.  For example:
+
+    <quota metric="*" max="5000" />
+    <quota metric="*JDBC*sql*" max="1000" />
+    <quota metric="*DA-ORACLE\*\*tablespace*" max="500" />
+    <quota metric="*DA-JIDA*" max="3000/>
+
+Quotas do not affect already-existing metrics.  When the DSA starts, it
+evaluates all existing metrics (by reading the DA-*.xml files in this
+directory) against any applicable quota rules.  If the quota is already
+exceeded, the DSA blocks all new metrics that match the filter.
+
+<nocollect /> rules block all new metrics that match the filter string.
+Use a <collect /> rule followed by a <nocollect /> to allow specific
+interesting metrics but block others.  The DSA uses the first rule that
+matches and ignores subsequent rules.  For example, the following rules will
+block JIDA JDBC metrics for all SQL statements except for INSERT statements:
+
+    <collect metric="*\\JDBC.sql\*INSERT*"/>
+    <nocollect metric="*\\JDBC.sql\*"/>
+
+Similarly, the following rules block uninteresting cumulative (non-rate)
+metrics from the IIS data adapter but allow the comparable rate metrics:
+
+    <collect metric="*DA-IIS*\Total*/sec"/>
+    <nocollect metric="*DA-IIS*\Total*"/>
+    
+***** DEFAULT RULES *****
+The following default rules govern specific data adapters and metric categories
+that can cause metric proliferation problems. Change these rules to suit your
+environment and restart the DSA.
+-->
+<Governor>
+    <quota metric="*" max="15000"  />
+    <quota metric="*\DA-AIX\*" max="250"  />
+    <quota metric="*\DA-AIX\*\\Disk\*" max="50"  />
+    <quota metric="*\DA-HPUX\*" max="250"  />
+    <quota metric="*\DA-HPUX\*IoStats*" max="50"  />
+    <quota metric="*\DA-Linux\*" max="250"  />
+    <quota metric="*\DA-Linux\*IoStats*" max="50"  />
+    <quota metric="*\DA-SolarisLite\*" max="250"  />
+    <quota metric="*\DA-SolarisLite\*\\Disk\*" max="50"  />
+    <quota metric="*\DA-SolarisLite\*\\IO Stat\*" max="50"  />
+    <quota metric="*\DA-Windows\*" max="250"  />
+    <quota metric="*\DA-Windows\*\\LogicalDisk\*" max="20"  />
+    <quota metric="*\DA-Windows\*\\PhysicalDisk\*:\*" max="60"  />
+    <quota metric="*\DA-JIDA\*" max="4750"  />
+    <quota metric="*\DA-JIDA\*\EJB\*" max="1000"  />
+    <quota metric="*\DA-JIDA\*\JSP\*" max="1200"  />
+    <quota metric="*\DA-JIDA\*\Servlet\*" max="1200"  />
+    <quota metric="*\DA-JIDA\*\JDBC*" max="1600"  />
+    <quota metric="*\DA-JIDA\*\Generic*" max="3750"  />
+    <quota metric="*\DA-JIDA\*\\Remote\*" max="1000"  />
+    <quota metric="*\DA-dotNet\*" max="3750"  />
+    <quota metric="*\DA-dotNet\*\Generic*" max="3750"  />
+    <quota metric="*\DA-dotNet\*\ADO*" max="500"  />
+    <quota metric="*\DA-dotNet\*\\Remote\*" max="1000"  />
+    <quota metric="*\DA-dotNet\*\ServicedComponent*" max="1000"  />
+    <quota metric="*\DA-dotNet\*\Web\*" max="1200"  />
+    <quota metric="*\DA-NET\*" max="1200"  />
+    <quota metric="*\DA-IIS\*" max="1200"  />
+    <quota metric="*\DA-Oracle\*" max="4750"  />
+    <quota metric="*\DA-Oracle\*\Tablespaces*" max="50"  />
+    <quota metric="*\DA-OracleDB\*" max="2000"  />
+    <quota metric="*\DA-DB2UDB\*" max="4750"  />
+    <quota metric="*\DA-DB2UDB\*\Tablespaces*" max="1400"  />
+    <quota metric="*\DA-SQLServer\*" max="4750"  />
+    <quota metric="*\DA-Sybase\*" max="4750"  />
+    <quota metric="*\DA-AceLive\*" max="2000"  />
+    <quota metric="*\DA-Apache\*" max="2000"  />
+    <quota metric="*\DA-JVM\*" max="2000"  />
+    <quota metric="*\DA-W3\*" max="2000"  />
+    <quota metric="*\DA-WebService\*" max="2000"  />
+    <nocollect metric="*\DA-Windows\*\\PhysicalDisk\*\*Idle Time"  />
+    <nocollect metric="*\DA-dotNet\*\Web\*.avi\*"  />
+    <nocollect metric="*\DA-dotNet\*\Web\*.Avi\*"  />
+    <nocollect metric="*\DA-dotNet\*\Web\*.AVI\*"  />
+    <nocollect metric="*\DA-dotNet\*\Web\*.css\*"  />
+    <nocollect metric="*\DA-dotNet\*\Web\*.Css\*"  />
+    <nocollect metric="*\DA-dotNet\*\Web\*.CSS\*"  />
+    <nocollect metric="*\DA-dotNet\*\Web\*.gif\*"  />
+    <nocollect metric="*\DA-dotNet\*\Web\*.Gif\*"  />
+    <nocollect metric="*\DA-dotNet\*\Web\*.GIF\*"  />
+    <nocollect metric="*\DA-dotNet\*\Web\*.jpg\*"  />
+    <nocollect metric="*\DA-dotNet\*\Web\*.Jpg\*"  />
+    <nocollect metric="*\DA-dotNet\*\Web\*.JPG\*"  />
+    <nocollect metric="*\DA-dotNet\*\Web\*.js\*"  />
+    <nocollect metric="*\DA-dotNet\*\Web\*.Js\*"  />
+    <nocollect metric="*\DA-dotNet\*\Web\*.JS\*"  />
+    <nocollect metric="*\DA-dotNet\*\Web\*.mov\*"  />
+    <nocollect metric="*\DA-dotNet\*\Web\*.Mov\*"  />
+    <nocollect metric="*\DA-dotNet\*\Web\*.MOV\*"  />
+    <nocollect metric="*\DA-dotNet\*\Web\*.png\*"  />
+    <nocollect metric="*\DA-dotNet\*\Web\*.Png\*"  />
+    <nocollect metric="*\DA-dotNet\*\Web\*.PNG\*"  />
+    <nocollect metric="*\DA-dotNet\*\Web\*.ppt\*"  />
+    <nocollect metric="*\DA-dotNet\*\Web\*.Ppt\*"  />
+    <nocollect metric="*\DA-dotNet\*\Web\*.PPT\*"  />
+    <nocollect metric="*\DA-dotNet\*\Web\*.swf\*"  />
+    <nocollect metric="*\DA-dotNet\*\Web\*.Swf\*"  />
+    <nocollect metric="*\DA-dotNet\*\Web\*.SWF\*"  />
+    <nocollect metric="*\DA-dotNet\*\Web\*.xls\*"  />
+    <nocollect metric="*\DA-dotNet\*\Web\*.Xls\*"  />
+    <nocollect metric="*\DA-dotNet\*\Web\*.XLS\*"  />
+    <collect metric="*DA-IIS*\Total*/sec"  />
+    <nocollect metric="*DA-IIS*\Total*"  />
+</Governor>

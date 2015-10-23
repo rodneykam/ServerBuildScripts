@@ -1,0 +1,113 @@
+<?xml version="1.0" ?>
+<!DOCTYPE appSettings SYSTEM "..\..\..\..\..\config\environment.dtd">
+<appSettings>
+	<!-- Metrics API START -->
+    <add key="InstrumentationApplicationName" value="API"/>
+    <add key="InstrumentationEnvironment" value="&Environment;"/>
+    <add key="InstrumentationServerHost" value="&UDPMetricsListenerHost;"/>
+    <add key="InstrumentationServerUdpPort" value="&UDPMetricsListenerPort;" />
+	  <add key="LogMetricsForDatasource" value="&LogMetricsForDatasource;" />
+    <add key="LogMetricsForWCFServices" value="&LogMetricsForWCFServices;" />
+    <add key="LogMetricsForMessageLogger" value="true" />
+
+  <!-- Metrics API END -->
+  
+	<!--From Relay health-->
+	<add key="ServerPath" value="&ServerPath;"/>
+	<add key="EMAIL_SUPPORT" value="&EMAIL_SUPPORT;"/>
+	<add key="RootLogPath" value="&RootLogPath;"/>
+	<add key="isConfigEncrypted" value="&isConfigEncrypted;"/>
+	<add key="GlobalPassphrase" value="&GlobalPassphrase;"/>
+	<add key="ReleaseHistory" value="&ReleaseHistory;"/>
+	<add key="isCookieSigned" value="&isCookieSigned;"/>
+	<add key="IsProduction" value="&IsProduction;"/>
+  <add key="CoreServiceBaseUrl" value="&servicehosturl;"/>
+
+	<!--From DB confgi-->
+	<add key="WatchwordExpiredDays" value="&WatchwordExpiredDays;"/>
+	<add key="Security.MaxTokenClicks" value="&Security.MaxTokenClicks;"/>
+	<add key="Security.MaxWrongAnswers" value="&Security.MaxWrongAnswers;"/>
+	<add key="Security.RecRedirectToWelcome" value="&Security.RecRedirectToWelcome;"/>
+	<add key="ServerRequiresTwoFactorAuthentication" value="&ServerRequiresTwoFactorAuthentication;"/>
+	<add key="DaysElapsedFromActiveToInactive" value="&DaysElapsedFromActiveToInactive;"/>
+	<add key="Security.MaxFailedLogins" value="&Security.MaxFailedLogins;"/>
+	<add key="Security.MaxLoginTimeouts" value="&Security.MaxLoginTimeouts;"/>
+	<add key="GatewayCertificatePath" value="&GatewayCertificatePath;"/>
+	<add key="GatewayLoginId" value="&GatewayLoginId;"/>
+	<add key="GatewayPassword" value="&GatewayPassword;"/>
+
+	<add key="EncryptedKeys" value="&EncryptedKeys;"/>
+  <add key="CertificateStoreType" value="&CertificateStoreType;"/>
+  <add key="CertificateStoreName" value="&CertificateStoreName;"/>
+  <add key="CertificateStorePath" value="&CertificateStorePath;"/>
+  <add key="CertificateStorePassword" value="&CertificateStorePassword;"/>
+	<add key="CertificateStoreSubject" value="&CertificateStoreSubject;"/>
+	<add key="EnableAS2Logging" value="&EnableAS2Logging;"/>
+  <add key="SenderTradingPartnerUrl" value="&SenderTradingPartnerUrl;"/>
+  <add key="SenderTradingPartnerName" value="&SenderTradingPartnerName;"/>
+  <add key="SenderTradingPartnerCertificateName" value="&SenderTradingPartnerCertificateName;"></add>
+  <add key="SenderName" value="RelayHealthMTM"/>
+  <add key="SenderReceiptUrl" value="&SenderReceiptUrl;"/>
+  <add key="SignSentMessages" value="true"/>
+  <add key="EncryptSentMessages" value="true"/>
+  <add key="MaxCountPerResend" value="10"></add>
+  <add key="IdleTimeInMinutesForResend" value="1"></add>
+  <add key="MaxDeliveryAttemptTry" value="5"></add>
+	<add key="TradingPartnerXMLPath" value="&TradingPartnerXMLPath;"></add>
+	<add key="RequireSignature" value="&RequireAS2Signing;"></add>
+	<add key="RequireEncryption" value="&RequireAS2Encryption;"></add>
+	
+	<!-- XDS setting -->
+	<add key="DocumentRepositoryUniqueId" value="&DocumentRepositoryUniqueId;"></add>
+	<add key="DocumentRepositoryOid" value="&DocumentRepositoryOid;"></add>
+  <add key="XDS_Hash_Algorithm" value="SHA1"></add>
+
+  <!--Rabbit MQ Connection Settings -->
+  <add key="RabbitMQHost" value="&RabbitMQHost;" />
+  <add key="RabbitMQVirtualHost" value="&MessageExchangeRabbitMQVirtualHost;" />
+  <add key="RabbitMQUsername" value="&RabbitMQUsername;" />
+  <add key="RabbitMQPassword" value="&RabbitMQPassword;" />
+  
+  <!--values are for OpenTimeout,SendTimeout,ReceiveTimeout, in seconds-->
+  <add key="ExternalXDSConnectionTimeouts" value="30,30,30"/>
+  <add key="ProcessInboundXdsMessageQueueName" value="ha-process_inbound_xds_message"/>
+  <add key="ProcessInboundMessageQueueName" value="&ProcessInboundMessageQueueName;" />
+  <add key="ControlQueueName" value="ha-hl7_rest_service_control" />
+  <add key="PartnerAuthenticationCacheReloadIntervalMinutes" value="15" />
+  <add key="EnableCacheUpdateServiceBus" value="&VortexHl7Service_EnableCacheUpdateServiceBus;" />
+  
+  <!-- for file validation -->
+  <add key="AVScanDir" value="&AVScanDir;"/>
+  <add key="Message.FileMaxSize" value="&Message.FileMaxSize;"/>
+
+  <!-- Turn true or false if Switch Board needs to loaded before hitting the Global.asax-->
+  <add key="LoadSwitchBoardInModule" value="true"/>
+
+  <!-- api.Rest Configurations -->
+  <add key="InteropExternalServiceHostSSL" value="&InteropExternalServiceHostSSL;"/>
+  <add key="RestServiceClientCertSubject" value="&VortexClientCertSubject;" />
+  
+
+  <add key="MessageServiceURI" value="/Rest/Messaging/Message.Rest"/>
+  <add key="SendMessageServiceURI" value="/Rest/Messaging/SendMessage.Rest"/>
+
+  <add key="RelayVerboseLoggingEnabledTags" value="DirectMessaging,"/>
+  <add key="RelayLoggingEnabled" value="true"/>
+
+  <!-- Cache Settings START -->
+  <add key="UseAppFabricServicesCache" value="&UseAppFabricServicesCache;" />
+  <add key="AppFabricServicesCacheName" value="&AppFabricServicesCacheName;" />
+  <add key="DefaultServicesCacheTimeoutSeconds" value="&DefaultServicesCacheTimeoutSeconds;"/>
+  <!--  Cache Settings END -->
+  
+  <!--Direct Messaging-->
+  <add key="DirectMsgInternalDomains" value="&DirectMsgInternalDomains;" />
+  <add key="RelayHealth_DNS_ServerHostName" value="&RelayHealthDNSServerHostName;"/>
+  <add key="PatientDirectCertificateExpirationTermInDays" value="14" />
+  <add key="CertificateExpirationAutoReissueBuffer" value="3" />
+  <add key="RHPatientDirectIntermediateCAOwner" value="&RHPatientDirectIntermediateCAOwner;" />
+  
+  <add key="DrugProvider" value="&DrugProvider;"/>
+  <add key="Interop_CCDProcessing_EnableHydro" value="false"/>
+  <add key="MessageLoggingEnabled" value="false"></add>
+</appSettings>
