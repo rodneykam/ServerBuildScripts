@@ -1,4 +1,4 @@
-# 11:38 AM 10/27/2015
+# 1:09 PM 10/27/2015
  
 # .SYNOPSIS
         
@@ -140,6 +140,8 @@ if ($machines.count)
             
 # Calls a script that contains calls to the one of the scripts as selected with the following switch statement
 # noDatabase is a switch that is optional for some of the script.
+# added buildscript parameter to Newscript to select script to run on the new windows server.
+
  Write-host "start switch"            
             Switch ($ScriptName)
             {
@@ -153,10 +155,12 @@ if ($machines.count)
                         executeScriptInRemoteSession -scriptBlock $scriptBlock -argsList $argsList -deployLoginame $currentexecuter -deployUserPassword $password -serverFQDN $destinationWinRMServer				
                         }	
           NewScript {
-                        $scriptBlock = { param($p1,$p2) pushd C:\Hwebsource\scripts
-                        C:\Hwebsource\scripts\NewScript.ps1 -config $p1	-MachineConfig $p2 $scriptName
+                        $buildscript = Read-Host -Prompt 'Input the name of the script you want to run'
+                        
+                        $scriptBlock = { param($p1,$p2,$buildscript) pushd C:\Hwebsource\scripts
+                        C:\Hwebsource\scripts\NewScript.ps1 -config $p1	-MachineConfig $p2 $buildscript
                         }
-                        $argsList = $config,$machine,$scriptName
+                        $argsList = $config,$machine,$buildscript
 
                         executeScriptInRemoteSession -scriptBlock $scriptBlock -argsList $argsList			
                     }                 
