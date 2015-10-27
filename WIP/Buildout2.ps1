@@ -64,7 +64,7 @@ $config= XMLParser -filepath $configFilePath -nodequalifier $EnvironmentPrefix
 
 $machines= $config.machines.machine
 
-# check if their are more than one target servers
+# check if there are more than one target servers
 
 $servers=$servers |sort -unique
 
@@ -90,28 +90,28 @@ if($servers)
 
 # Make sure we have a server selected from buildoutSetup.config
 # Look for the server in the configuration xml (buildoutSetup.config) file that needs to be built.
-# codedeployed will be false for the server that needs to be built.
+# codedeployed flag will be false for the server that needs to be deployed to.
 
 if ($machines.count)
 {
 	foreach ($machine in $machines)
 	{
 		# Is this required?????
-        #  if($serverlist)
-		#  {
-			#  $Hwebnumber=((([int](((($machine.HwebName).split("."))[0])[-2]))-48)*10)+((([int](((($machine.HwebName).split("."))[0])[-1]))-48))
-			#  if ($Hwebnumber -eq $serverlist[$count])
-			#  {
-				#  $ReadyForDeploy=$True
-				#  $count++	
-			#  }
-			#  else
-			#  {
-				#  $ReadyForDeploy=$False
-			#  }			
-		#  }
-		#  else
-		#{
+          if($serverlist)
+		  {
+			  $Hwebnumber=((([int](((($machine.HwebName).split("."))[0])[-2]))-48)*10)+((([int](((($machine.HwebName).split("."))[0])[-1]))-48))
+			  if ($Hwebnumber -eq $serverlist[$count])
+			  {
+				  $ReadyForDeploy=$True
+				  $count++	
+			  }
+			  else
+			  {
+				  $ReadyForDeploy=$False
+			  }			
+		  }
+		  else
+		{
 			if($machine.codedeployed -match "False")
 			{
 				$ReadyForDeploy=$True
@@ -121,7 +121,7 @@ if ($machines.count)
 			{
 				$ReadyForDeploy=$False
 			}
-		#}
+		}
 	
 		
 		if($ReadyForDeploy -eq $True)
