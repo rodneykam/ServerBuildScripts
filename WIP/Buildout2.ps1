@@ -96,22 +96,23 @@ if ($machines.count)
 {
 	foreach ($machine in $machines)
 	{
-		# Is this required?????
-        #  if($serverlist)
-		#  {
-			#  $Hwebnumber=((([int](((($machine.HwebName).split("."))[0])[-2]))-48)*10)+((([int](((($machine.HwebName).split("."))[0])[-1]))-48))
-			#  if ($Hwebnumber -eq $serverlist[$count])
-			#  {
-				#  $ReadyForDeploy=$True
-				#  $count++	
-			#  }
-			#  else
-			#  {
-				#  $ReadyForDeploy=$False
-			#  }			
-		#  }
-		#  else
-		#{
+		Is this required?????
+         if($serverlist)
+		 {
+			 $Hwebnumber=((([int](((($machine.HwebName).split("."))[0])[-2]))-48)*10)+((([int](((($machine.HwebName).split("."))[0])[-1]))-48))
+			 if ($Hwebnumber -eq $serverlist[$count])
+			 {
+				 Write-host "Debug 1"
+                 $ReadyForDeploy=$True
+				 $count++	
+			 }
+			 else
+			 {
+				 $ReadyForDeploy=$False
+			 }			
+		 }
+		 else
+		{
 			if($machine.codedeployed -match "False")
 			{
 				$ReadyForDeploy=$True
