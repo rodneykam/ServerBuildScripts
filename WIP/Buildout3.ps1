@@ -1,4 +1,4 @@
-# 1:09 PM 10/27/2015
+# 3:54 PM 10/27/2015
  
 # .SYNOPSIS
         
@@ -17,14 +17,14 @@
 
 # .EXAMPLE
         
-# .\Buildout2.ps1 $Environment NewScript
+# .\Buildout3.ps1 $EnvironmentPrefix NewScript
 #     
 # .NOTES
 # Script Name :  Buildout2.ps1   
 # Author      :  Mike Felkins       
 # Date        :  11:39 AM 10/27/2015
 #######################################################################################
-# Script begins
+Write-host -ForegroundColor Green "Script begins" 
 
 #   These are the parameters that are required by this script to run.
 #   $EnvironmentPrefix generally is Prod. The other possibilities are to be determined.
@@ -41,7 +41,7 @@ param (
 	)
 
 # Import-Module that contains custom functions
-    
+    Write-host -ForegroundColor Yellow "Import-Module that contains custom functions"
     Import-Module -Name .\BuildoutPackageExecuterFunctions.ps1
 
 # Check if current console has admin rights
@@ -50,6 +50,7 @@ GetAdmin([ref]$isAdmin)
 $error.clear()
 
 # Change to the working directory
+write-host -ForegroundColor Yellow "Change to the working directory"
 $loc=get-location
 
 $configFilePath = $loc.path +"\"+"buildoutSetup.config"
@@ -60,12 +61,13 @@ $currentuser= [Environment]::UserName
 
 # Load the configuration xml file
 # Set the parameters we will pass to the target script or scripts
+write-host -ForegroundColor Yellow "Load the configuration xml file"
 $config= XMLParser -filepath $configFilePath -nodequalifier $EnvironmentPrefix
 
 $machines= $config.machines.machine
 
-# check if there are more than one target servers
-
+# check if their are more than one target servers
+write-host -ForegroundColor Yellow "check if their are more than one target servers"
 $servers=$servers |sort -unique
 
 $Serverlist=@()
@@ -90,30 +92,12 @@ if($servers)
 
 # Make sure we have a server selected from buildoutSetup.config
 # Look for the server in the configuration xml (buildoutSetup.config) file that needs to be built.
-# codedeployed flag will be false for the server that needs to be deployed to.
+# codedeployed will be false for the server that needs to be built.
 
 if ($machines.count)
 {
 	foreach ($machine in $machines)
 	{
-<<<<<<< HEAD
-		# Is this required?????
-          if($serverlist)
-		  {
-			  $Hwebnumber=((([int](((($machine.HwebName).split("."))[0])[-2]))-48)*10)+((([int](((($machine.HwebName).split("."))[0])[-1]))-48))
-			  if ($Hwebnumber -eq $serverlist[$count])
-			  {
-				  $ReadyForDeploy=$True
-				  $count++	
-			  }
-			  else
-			  {
-				  $ReadyForDeploy=$False
-			  }			
-		  }
-		  else
-=======
-		Is this required?????
          if($serverlist)
 		 {
 			 $Hwebnumber=((([int](((($machine.HwebName).split("."))[0])[-2]))-48)*10)+((([int](((($machine.HwebName).split("."))[0])[-1]))-48))
@@ -124,67 +108,75 @@ if ($machines.count)
 				 $count++	
 			 }
 			 else
-			 {
+			 {  Write-host "Debug 2"
 				 $ReadyForDeploy=$False
 			 }			
 		 }
 		 else
->>>>>>> 9225f1ed6e14f89dca21b3d24ae941003f827162
 		{
 			if($machine.codedeployed -match "False")
 			{
+                Write-host "Debug 3"
 				$ReadyForDeploy=$True
 								
 			}
 			else
-			{
+			{   Write-host "Debug 4"
 				$ReadyForDeploy=$False
 			}
-		}
+		#}
 	
 		
 		if($ReadyForDeploy -eq $True)
 		{	
-			$config
-			$machine
+			Write-host -ForegroundColor Yellow "this is the contents of $config"
+            $config
+			Write-host "this is the contents of $Machine"
+            $machine
 			
             $destinationWinRMServer = [string]::Format("{0}", $machine.HwebName)
             $currentexecuter= $machine.domain +"\"+"$currentuser"
 			if(!($password))
-			{
+			{ Write-host "Debug 5"
 			$password=SetPassword -user $currentexecuter 
 			}
-			$Destination = "\\"+$machine.MachineIp+"\"+$machine.PackageDestination
+			Write-host "Debug 6"
+            $Destination = "\\"+$machine.MachineIp+"\"+$machine.PackageDestination
 
             
 # Calls a script that contains calls to the one of the scripts as selected with the following switch statement
 # noDatabase is a switch that is optional for some of the script.
 # added buildscript parameter to Newscript to select script to run on the new windows server.
 
- Write-host "start switch"            
-            Switch ($ScriptName)
-            {
-                    
-          ScriptBooter  {
-                        $scriptBlock = { param($p1,$p2) pushd C:\Hwebsource\scripts
-                        C:\Hwebsource\scripts\scriptbooter.ps1 -config $p1	-MachineConfig $p2	
-                        }
-                        $argsList = $config,$machine
-
-                        executeScriptInRemoteSession -scriptBlock $scriptBlock -argsList $argsList -deployLoginame $currentexecuter -deployUserPassword $password -serverFQDN $destinationWinRMServer				
-                        }	
-          NewScript {
-                        $buildscript = Read-Host -Prompt 'Input the name of the script you want to run'
-                        
-                        $scriptBlock = { param($p1,$p2,$buildscript) pushd C:\Hwebsource\scripts
-                        C:\Hwebsource\scripts\NewScript.ps1 -config $p1	-MachineConfig $p2 $buildscript
-                        }
-                        $argsList = $config,$machine,$buildscript
-
-                        executeScriptInRemoteSession -scriptBlock $scriptBlock -argsList $argsList			
-                    }                 
-			}	
+Write-host -foregroundcolor Yellow "start switch"
+ Switch ($ScriptName)
+ {
+    # 1{ ./permtest_mod.ps1 -EnvironmentConfig $P1 -MachineConfig $P2 }
+    # 2{ ./hv_mod.ps1 -EnvironmentConfig $P1 -MachineConfig $P2}
+    
+################### Test Scripts ################################################################    
+   
+    
+    1   {  Write-host -ForegroundColor Yellow "Running permtest_mod.ps1"
+                                
+            $scriptBlock = { param($p1,$p2) pushd C:\Hwebsource\scripts
+            C:\Hwebsource\scripts\permtest_mod.ps1 -config $p1 -MachineConfig $p2
+            }
+            $argsList = $config,$machine
+            executeScriptInRemoteSession -scriptBlock $scriptBlock -argsList $argsList	 
+        }
+        
+    2 {  Write-host -ForegroundColor Yellow "Running HV.ps1"
+         if (test-path "c:\hwebsource ")
+        {
+        
+        $scriptBlock = { param($p1,$p2) pushd C:\Hwebsource\scripts
+            C:\Hwebsource\scripts\hv_mod.ps1 -config $P1 -machineconfig $P2
+            }
+            $argsList = $config,$machine
+            executeScriptInRemoteSession -scriptBlock $scriptBlock -argsList $argsList	
 		}
-	}
+    }
+    
 }
-	
+Write-host -ForegroundColor Green "End of Script"
