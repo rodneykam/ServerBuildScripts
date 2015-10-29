@@ -32,6 +32,7 @@ param
 $Date = get-date -f "MM-dd-yyyy hh-mm-ss"
 
 $Path = "C:\Hwebsource\scripts\logs\registerAppCerts_$($env:computername)_" + $Date + ".log"
+
 Write-Host -ForegroundColor Yellow $Path
 
 $NewLogFile = New-Item $Path -Force -ItemType File
