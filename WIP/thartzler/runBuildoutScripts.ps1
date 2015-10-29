@@ -7,59 +7,49 @@
 ##
 ##############################################################################
 
+
 <#
 .SYNOPSIS
-        
-This script provides a means to run a set of nested scripts or an individual script as warranted to facilitate 
-a RelayHealth production Web server buildout. These scripts are referred to as the "buildout scripts".
+	This script provides a means to run a set of nested scripts or an individual script as warranted to facilitate 
+	a RelayHealth production Web server buildout. These scripts are referred to as the "buildout scripts".
         
 .DESCRIPTION
-        
-This script parses an XML file, buildoutSetup.config, in order to select the approprite <machine> data 
-needed for the web server being built.
-This script derives parameters ($config and $machine) that are required by a majority of the buildout scripts.
-The user runs this script from a PowerShell command line by entering the command to run the script and 
-including the number ($scriptNumber) corresponding to the script that is desired to be run.
-
-Use this script to run the following:
-Option 1 - run the AllBuildScripts.ps1 script 
-Option 2 - run individual scripts contained in the AllBuildScripts.ps1 script independently
-
-.PARAMETERS
-
-$EnvironmentPrefix  (INTE, STAG, DEMO, PROD)
-$scriptNumber		(see BUILDOUT SCRIPTS list)
-$servers
-$noDatabase
+	This script parses an XML file, buildoutSetup.config, in order to select the approprite <machine> data 
+	needed for the web server being built.
 	
-.BUILDOUT SCRIPTS
-
-Script					Number	Purpose
-==================================================================================
-script1					(1)		purpose of script 1		
-next					(2)		purpose of script 2		
-next					(3)		purpose of script 3	
-next					(4)		purpose of script 4	
-next					(5)		purpose of script 5		
-next					(6)		purpose of script 6			
-next					(7)		purpose of script 7		
-next					(8)		purpose of script 8		
-next					(9)		purpose of script 9		
-next					(10)	purpose of script 10			
-next					(11)	purpose of script 11		
-next					(12)	purpose of script 12			
-buildoutAllScripts.ps1 	(99)	Runs the complete set of buildout scripts
+	This script derives parameters ($config and $machine) that are required by a majority of the buildout scripts.
 	
-.EXAMPLE 1 
-To run the complete set of buildout scripts:        
-	runBuildoutScripts.ps1 -EnvironmentPrefix -noDatabase -scriptNumber 
-	runBuildoutScripts.ps1 -EnvironmentPrefix Prod -noDatase 99    
+	The user runs this script from a PowerShell command line by entering the command to run the script and 
+	including the number ($scriptNumber) corresponding to the script that is desired to be run.
 
-.EXAMPLE 2
-To only run the script corresponding to script number 1:        
-	runBuildoutScripts.ps1 -EnvironmentPrefix -noDatabase -scriptNumber 
-	runBuildoutScripts.ps1 -EnvironmentPrefix Prod -noDatabase 1   
+	Use this script to run the following:
+		Option 1 - run the AllBuildScripts.ps1 script (Number 99)
+		Option 2 - run individual scripts contained in the AllBuildScripts.ps1 script independently
+	
+	Script						Number	
+	=====================================
+	hostnamessingleip.ps1		(1)		
+	dotnetcharge.ps1			(2)		
+	stats.ps1					(3)
+	permtest.ps1				(4)
+	metascan.ps1				(5)		
+	audit.ps1					(6)		
+	wintertree.ps1				(7)		
+	hiddenshares.ps1			(8)		
+	Msutil.ps1					(9)		
+	SetFolderPermissions.ps1	(10)	
+	Initiate.ps1				(11)	
+	AppFabricSetup.ps1			(12)
+	registerAppCerts.ps1		(13)		
+	buildoutAllScripts.ps1 		(99)
+	
+.EXAMPLE 
+	To run the complete set of buildout scripts:        
+	runBuildoutScripts.ps1 -EnvironmentPrefix Prod -noDatase 99
 
+.EXAMPLE
+	To only run one of scripts from the buildout scripts list, enter the corresponding script number 1:
+	runBuildoutScripts.ps1 -EnvironmentPrefix Prod -noDatabase 1
 #>
 
 
@@ -69,6 +59,7 @@ param (
 	$servers=$null,
 	[switch]$noDatabase
 	)
+
 
 # Import-Module that contains custom functions
     
@@ -198,13 +189,12 @@ if ($machines.count)
 			}
 			elseif ($scriptNumber -eq 2)
 			{
-				Write-host -ForegroundColor Green "`nscriptNumber = 2, Running hv.ps1"
+				Write-host -ForegroundColor Green "`nscriptNumber = 2, Running registerAppCerts.ps1"
 				 $scriptBlock = { param($p1,$p2) pushd C:\Hwebsource\scripts
-				 C:\Hwebsource\scripts\hv.ps1 $p1 $p2
+				 C:\Hwebsource\scripts\registerAppCerts.ps1 $p1 $p2
 				 }
-		
-			         $argsList = $config,$machine
-			         executeScriptInRemoteSession -scriptBlock $scriptBlock -argsList $argsList -deployLoginame $currentexecuter -deployUserPassword $password -serverFQDN $destinationWinRMServer			      
+				 $argsList = $config,$machine
+			     executeScriptInRemoteSession -scriptBlock $scriptBlock -argsList $argsList -deployLoginame $currentexecuter -deployUserPassword $password -serverFQDN $destinationWinRMServer			      
    			}
 			else
 			{
