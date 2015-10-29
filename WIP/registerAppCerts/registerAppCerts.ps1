@@ -29,37 +29,40 @@ param
 # Creates a new log file
 #sets the Logfile variable to the path and file name.
 
-# $Date = get-date -f "MM-dd-yyyy hh-mm-ss"
+$Date = get-date -f "MM-dd-yyyy hh-mm-ss"
 
-# $Path = "C:\Hwebsource\scripts\logs\registerAppCerts_$($env:computername)_" + $Date + ".log"
-# Write-Host $Path
-# $NewLogFile = New-Item $Path -Force -ItemType File
+$Path = "C:\Hwebsource\scripts\logs\registerAppCerts_$($env:computername)_" + $Date + ".log"
 
-# $Logfile = $Path
+Write-Host -ForegroundColor Yellow $Path
+
+$NewLogFile = New-Item $Path -Force -ItemType File
+
+$Logfile = $Path
 
 # Import the Logfile function.
-# Import-module .\LogfileFunction.psm1
+Import-module C:\Hwebsource\scripts\LogfileFunction.psm1
 
-# Added #LogWrite to populate the log file everywhere there was a throw statement
+# Added LogWrite to populate the log file everywhere there was a throw statement
 # Added this to suppress errors to the console
+
 # $erroractionpreference = "silentlycontinue"
 
 $account = [String]$MachineConfig.HVRelayServicesAccount
 
 # Write the Date and time to the log file
-#LogWrite "$Date"
+LogWrite "$Date"
 
 if([string]::IsNullOrEmpty($account))
 {
-	Write-Host "HVRelayServicesAccount does not exits in buildoutconfig"
-    #LogWrite "HVRelayServicesAccount does not exits in buildoutconfig"
+	Write-Host -ForegroundColor Yellow "`n HVRelayServicesAccount does not exits in buildoutconfig"
+    LogWrite "HVRelayServicesAccount does not exits in buildoutconfig"
 }	
 
 pushd E:\Relayhealth\Deployhelp
 
 
-#$wincertdir = "E:\healthvault\winhttpcertcfg.exe"
-$wincertdir = "E:\healthvault"
+$wincertdir = "E:\healthvault\winhttpcertcfg.exe"
+#$wincertdir = "E:\healthvault"
 
 $hvsubject ="healthvault.relayhealth.com"
 
@@ -70,8 +73,8 @@ $cert = gci cert:\LocalMachine\MY | where-object {$_.Subject -match "$hvsubject"
 if([string]::IsNullOrEmpty($cert))
 {
 	# corrected spelling
-    Write-Host "Healthvault cert does not exist in the mmc or DTD does not have the right value"
-    #LogWrite "Healthvault cert does not exist in the mmc or DTD does not have the right value"
+    Write-Host -ForegroundColor Yellow "`n Healthvault cert does not exist in the mmc or DTD does not have the right value"
+    LogWrite "Healthvault cert does not exist in the mmc or DTD does not have the right value"
 }
 
 $cert.subject
@@ -79,49 +82,49 @@ $cert.subject
 # removed the old throw statement and added this test for the wincertdir.
 if (-Not (test-path $wincertdir)) 
 {
-	Write-host "The folder E:\healthvault does not exist"
-    #LogWrite "$wincertdir does not exist"
+	Write-Host -ForegroundColor Yellow "`n The folder E:\healthvault does not exist"
+    LogWrite "$wincertdir does not exist"
 }
 
-# if (test-path $wincertdir)
-# {   
-    # #LogWrite "$wincertdir exist"
+if (test-path $wincertdir)
+{   
+    LogWrite "$wincertdir exist"
 	
-	# $accounts = @("Network Service",$account)
+	$accounts = @("Network Service",$account)
 	
-	# $count = 1
+	$count = 1
 	
-	# foreach($user in $accounts)
-	# {
-		# $healthvaultdir = "E:\healthvault\registercert_generated"+"$count"+".bat"
+	foreach($user in $accounts)
+	{
+		$healthvaultdir = "E:\healthvault\registercert_generated"+"$count"+".bat"
 		
 		
-		# if(test-path  $healthvaultdir )
-		# {
-		   # #LogWrite "Invoking $healthvaultdir"
-           # write-host "$healthvaultdir exist" 	
-		   # invoke-expression  $healthvaultdir
+		if(test-path  $healthvaultdir )
+		{
+		   LogWrite "Invoking $healthvaultdir"
+           Write-Host -ForegroundColor Yellow "`n E:\healthvault\registercert_generated"+"$count"+".bat exists" 	
+		   invoke-expression  $healthvaultdir
 		
-		# }
-		# else
-		# {
-			# # New-Item  $healthvaultdir -type file
+		}
+		else
+		{
+			# New-Item  $healthvaultdir -type file
 		
-			# # add-content -path $healthvaultdir -value "@SET WC_CERTNAME= $hvsubject"
+			# add-content -path $healthvaultdir -value "@SET WC_CERTNAME= $hvsubject"
 			
-			# # add-content -path $healthvaultdir -value "@`"$wincertdir`" -g -a `"$user`"  -c LOCAL_MACHINE\My -s %WC_CERTNAME%"
-			# # add-content -path $healthvaultdir -value "@SET WC_CERTNAME="
+			# add-content -path $healthvaultdir -value "@`"$wincertdir`" -g -a `"$user`"  -c LOCAL_MACHINE\My -s %WC_CERTNAME%"
+			# add-content -path $healthvaultdir -value "@SET WC_CERTNAME="
 			
-            # write-host "Here we would create the batch file and invoke it."
-			 # #LogWrite "Invoking $healthvaultdir"
-			 # invoke-expression $healthvaultdir
-		# }
-		# sleep 5
-		# $count ++
+            Write-Host -ForegroundColor Yellow "`n Here we would create the batch file and invoke it."
+			 LogWrite "Invoking $healthvaultdir"
+			 invoke-expression $healthvaultdir
+		}
+		sleep 5
+		$count ++
 		
-	# }
+	}
 
-# }
+}
 
 
 
