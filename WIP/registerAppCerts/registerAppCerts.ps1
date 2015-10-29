@@ -9,7 +9,7 @@
 # 
 # .EXAMPLE
         
-# .\hv.ps1 $EnvironmentConfig $MachineConfig        
+# .\registerAppCerts.ps1 $EnvironmentConfig $MachineConfig        
 # .NOTES
 # Script Name :  registerAppCerts.ps1 
 # Author      :  Mike Felkins       
