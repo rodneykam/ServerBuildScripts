@@ -40,7 +40,7 @@ Import-module .\LogfileFunction.psm1
 LogWrite "$Date"
 
 # Added LogWrite to populate the log file everywhere there was a throw statement
-
+# Added this to suppress errors to the console
 $erroractionpreference = "silentlycontinue"
 
 $account = [String]$MachineConfig.HVRelayServicesAccount
@@ -71,6 +71,7 @@ if([string]::IsNullOrEmpty($cert))
 
 $cert.subject
 
+# removed the old throw statement and added this test for the wincertdir.
 if (-Not (test-path $wincertdir)) 
 {
 	Write-host "$wincertdir does not exist"
