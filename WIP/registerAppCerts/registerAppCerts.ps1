@@ -25,25 +25,29 @@ param
 
 # Added these variables to name the new log file.
 # Date and time stamp
-$Date = get-date -f "MM-dd-yyyy hh-mm-ss"
 # Path and file name of the new log file
-$Path = "C:\Hwebsource\scripts\logs\registerAppCerts_$($env:computername)_" + $Date + ".log"
 # Creates a new log file
-$NewLogFile = New-Item $Path -Force -ItemType File
 #sets the Logfile variable to the path and file name.
+
+$Date = get-date -f "MM-dd-yyyy hh-mm-ss"
+
+$Path = "C:\Hwebsource\scripts\logs\registerAppCerts_$($env:computername)_" + $Date + ".log"
+
+$NewLogFile = New-Item $Path -Force -ItemType File
+
 $Logfile = $Path
 
 # Import the Logfile function.
 Import-module .\LogfileFunction.psm1
 
-# Write the Date and time to the log file
-LogWrite "$Date"
-
 # Added LogWrite to populate the log file everywhere there was a throw statement
 # Added this to suppress errors to the console
-$erroractionpreference = "silentlycontinue"
+# $erroractionpreference = "silentlycontinue"
 
 $account = [String]$MachineConfig.HVRelayServicesAccount
+
+# Write the Date and time to the log file
+LogWrite "$Date"
 
 if([string]::IsNullOrEmpty($account))
 {
