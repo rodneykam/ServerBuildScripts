@@ -1,4 +1,4 @@
-# 9:36 AM 10/29/2015
+# 2:54 PM 10/29/2015
 
 #.SYNOPSIS
         
@@ -13,7 +13,7 @@
 # .NOTES
 # Script Name :  registerAppCerts.ps1 
 # Author      :  Mike Felkins       
-# Date        :  9:36 AM 10/29/2015  
+# Date        :  2:54 PM 10/29/2015 
 #
 #######################################################################################
 # Script begins
@@ -29,36 +29,37 @@ param
 # Creates a new log file
 #sets the Logfile variable to the path and file name.
 
-$Date = get-date -f "MM-dd-yyyy hh-mm-ss"
+# $Date = get-date -f "MM-dd-yyyy hh-mm-ss"
 
-$Path = "C:\Hwebsource\scripts\logs\registerAppCerts_$($env:computername)_" + $Date + ".log"
+# $Path = "C:\Hwebsource\scripts\logs\registerAppCerts_$($env:computername)_" + $Date + ".log"
+# Write-Host $Path
+# $NewLogFile = New-Item $Path -Force -ItemType File
 
-$NewLogFile = New-Item $Path -Force -ItemType File
-
-$Logfile = $Path
+# $Logfile = $Path
 
 # Import the Logfile function.
-Import-module .\LogfileFunction.psm1
+# Import-module .\LogfileFunction.psm1
 
-# Added LogWrite to populate the log file everywhere there was a throw statement
+# Added #LogWrite to populate the log file everywhere there was a throw statement
 # Added this to suppress errors to the console
 # $erroractionpreference = "silentlycontinue"
 
 $account = [String]$MachineConfig.HVRelayServicesAccount
 
 # Write the Date and time to the log file
-LogWrite "$Date"
+#LogWrite "$Date"
 
 if([string]::IsNullOrEmpty($account))
 {
 	Write-Host "HVRelayServicesAccount does not exits in buildoutconfig"
-    LogWrite "HVRelayServicesAccount does not exits in buildoutconfig"
+    #LogWrite "HVRelayServicesAccount does not exits in buildoutconfig"
 }	
 
 pushd E:\Relayhealth\Deployhelp
 
 
-$wincertdir = "E:\healthvault\winhttpcertcfg.exe"
+#$wincertdir = "E:\healthvault\winhttpcertcfg.exe"
+$wincertdir = "E:\healthvault"
 
 $hvsubject ="healthvault.relayhealth.com"
 
@@ -70,7 +71,7 @@ if([string]::IsNullOrEmpty($cert))
 {
 	# corrected spelling
     Write-Host "Healthvault cert does not exist in the mmc or DTD does not have the right value"
-    LogWrite "Healthvault cert does not exist in the mmc or DTD does not have the right value"
+    #LogWrite "Healthvault cert does not exist in the mmc or DTD does not have the right value"
 }
 
 $cert.subject
@@ -78,49 +79,49 @@ $cert.subject
 # removed the old throw statement and added this test for the wincertdir.
 if (-Not (test-path $wincertdir)) 
 {
-	Write-host "$wincertdir does not exist"
-    LogWrite "$wincertdir does not exist"
+	Write-host "The folder E:\healthvault does not exist"
+    #LogWrite "$wincertdir does not exist"
 }
 
-if (test-path $wincertdir)
-{   
-    LogWrite "$wincertdir exist"
+# if (test-path $wincertdir)
+# {   
+    # #LogWrite "$wincertdir exist"
 	
-	$accounts = @("Network Service",$account)
+	# $accounts = @("Network Service",$account)
 	
-	$count = 1
+	# $count = 1
 	
-	foreach($user in $accounts)
-	{
-		$healthvaultdir = "E:\healthvault\registercert_generated"+"$count"+".bat"
+	# foreach($user in $accounts)
+	# {
+		# $healthvaultdir = "E:\healthvault\registercert_generated"+"$count"+".bat"
 		
 		
-		if(test-path  $healthvaultdir )
-		{
-		   LogWrite "Invoking $healthvaultdir"
-           write-host "$healthvaultdir exist" 	
-		   invoke-expression  $healthvaultdir
+		# if(test-path  $healthvaultdir )
+		# {
+		   # #LogWrite "Invoking $healthvaultdir"
+           # write-host "$healthvaultdir exist" 	
+		   # invoke-expression  $healthvaultdir
 		
-		}
-		else
-		{
-			# New-Item  $healthvaultdir -type file
+		# }
+		# else
+		# {
+			# # New-Item  $healthvaultdir -type file
 		
-			# add-content -path $healthvaultdir -value "@SET WC_CERTNAME= $hvsubject"
+			# # add-content -path $healthvaultdir -value "@SET WC_CERTNAME= $hvsubject"
 			
-			# add-content -path $healthvaultdir -value "@`"$wincertdir`" -g -a `"$user`"  -c LOCAL_MACHINE\My -s %WC_CERTNAME%"
-			# add-content -path $healthvaultdir -value "@SET WC_CERTNAME="
+			# # add-content -path $healthvaultdir -value "@`"$wincertdir`" -g -a `"$user`"  -c LOCAL_MACHINE\My -s %WC_CERTNAME%"
+			# # add-content -path $healthvaultdir -value "@SET WC_CERTNAME="
 			
-            write-host "Here we would create the batch file and invoke it."
-			 LogWrite "Invoking $healthvaultdir"
-			 invoke-expression $healthvaultdir
-		}
-		sleep 5
-		$count ++
+            # write-host "Here we would create the batch file and invoke it."
+			 # #LogWrite "Invoking $healthvaultdir"
+			 # invoke-expression $healthvaultdir
+		# }
+		# sleep 5
+		# $count ++
 		
-	}
+	# }
 
-}
+# }
 
 
 
