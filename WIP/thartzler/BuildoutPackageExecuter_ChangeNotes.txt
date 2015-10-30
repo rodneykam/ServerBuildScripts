@@ -1,0 +1,235 @@
+param (
+	[string] $EnvironmentPrefix = $(throw "You must specify a environment."),
+	[Switch]$FlashDeploy=$false,
+	$servers=$null,
+	$DropBoxName,
+	[switch]$noDatabase
+	)
+
+Import-Module -Name .\BuildoutPackageExecuterFunctions.ps1
+
+# # # # # # # Not included in new runBuildoutScripts.ps1 script. # # # # #
+<#
+Function logstamp {
+$now=get-Date
+$yr=$now.Year.ToString()
+$mo=$now.Month.ToString()
+$dy=$now.Day.ToString()
+$hr=$now.Hour.ToString()
+$mi=$now.Minute.ToString()
+if ($mo.length -lt 2) {
+$mo="0"+$mo #pad single digit months with leading zero
+}
+if ($dy.length -lt 2) {
+$dy="0"+$dy #pad single digit day with leading zero
+}
+if ($hr.length -lt 2) {
+$hr="0"+$hr #pad single digit hour with leading zero
+}
+if ($mi.length -lt 2) {
+$mi="0"+$mi #pad single digit minute with leading zero
+}
+write-output $yr$mo$dy$hr$mi
+}
+#>
+# # # # #  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+clear-host
+
+$isAdmin = $null
+GetAdmin([ref]$isAdmin)
+$error.clear()
+
+#StartTranscript
+
+$loc=get-location
+
+$configFilePath = $loc.path +"\"+"buildoutSetup.config"
+
+TestPath  -path $configFilePath
+
+$currentuser= [Environment]::UserName
+
+$config= XMLParser -filepath $configFilePath -nodequalifier $EnvironmentPrefix
+
+$machines= $config.machines.machine
+
+$servers=$servers |sort -unique
+
+
+$Serverlist=@()
+
+if($servers)
+{
+	foreach($server in $servers)
+	{
+		if (!(($server -ge 0) -and ($server -le $machines.count)))
+		{
+			write-host -foregroundcolor Yellow "You $server input  in not right. Here is what you entered $servers"
+			exit
+		}
+		else
+		{
+			$Serverlist+=$server
+		}
+
+	}
+	$count=0
+	
+	
+
+}
+
+# # # # # # # Not included in new runBuildoutScripts.ps1 script. # # # # #
+<#
+if($FlashDeploy)
+{
+
+	$now=logstamp
+	$DropBoxLogFolder=(get-location).path + "\DropBoxLogs"
+	if ($DropBoxName)
+		{
+			$DropBoxLogFolder=(get-location).path + "\DropBoxLogs\CustomLogs\"+"$DropBoxName"
+		}
+		
+	if (!(test-path $DropBoxLogFolder ))
+	{
+		New-Item $DropBoxLogFolder -type directory
+	}
+
+
+	$DropBoxLogPath= (get-location).path + "\DropBoxLogs\DropBox"+"$now"+"log.log"
+
+	if ($DropBoxName)
+	{
+		$DropBoxLogPath= (get-location).path + "\DropBoxLogs\CustomLogs\$DropBoxName\"+"$DropBoxName"+"$now"+"log.log"
+				
+	}
+	try
+	{
+		start-transcript -path $DropBoxLogPath 
+	}
+	catch
+	{
+		stop-transcript 
+		start-transcript -path $DropBoxLogPath 
+					
+	}
+}
+#>
+# # # # #  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+if ($machines.count)
+{
+	foreach ($machine in $machines)
+	{
+		if($serverlist)
+		{
+			$Hwebnumber=((([int](((($machine.HwebName).split("."))[0])[-2]))-48)*10)+((([int](((($machine.HwebName).split("."))[0])[-1]))-48))
+			if ($Hwebnumber -eq $serverlist[$count])
+			{
+				$ReadyForDeploy=$True
+				$count++	
+			}
+			else
+			{
+				$ReadyForDeploy=$False
+			}			
+		}
+		else
+		{
+			if($machine.codedeployed -match "False")
+			{
+				$ReadyForDeploy=$True
+								
+			}
+			else
+			{
+				$ReadyForDeploy=$False
+			}
+		}
+	
+		
+		if($ReadyForDeploy -eq $True)
+		{	
+			$HwebName=$machine.HwebName
+			write-host -foreground green "You are going to execute on $HwebName"
+			$destinationWinRMServer = [string]::Format("{0}", $machine.HwebName)
+			
+			$currentexecuter= $machine.domain +"\"+"$currentuser"
+			if(!($password))
+			{
+			$password=SetPassword -user $currentexecuter 
+			}
+			$Destination = "\\"+$machine.MachineIp+"\"+$machine.PackageDestination
+
+# # # # # # # Not included in new runBuildoutScripts.ps1 script. # # # # #
+<#			
+			if($FlashDeploy)
+			{
+				$FlashdeployFldr = $machine.PackageSource +"\scripts" 
+				$DestFlashdeployFldr = $Destination +"\scripts"
+				$DropBox= (get-location).path + "\DropBox"
+				if ($DropBoxName)
+				{
+					$DropBox= (get-location).path + "\CustomBoxes\$DropBoxName"
+				
+				}
+				
+				CopyPackage -IP $machine.MachineIp -User $currentexecuter -Password $password -Source $DropBox -Destination $FlashdeployFldr 	
+				CopyPackage -IP $machine.MachineIp -User $currentexecuter -Password $password -Source $FlashdeployFldr -Destination $DestFlashdeployFldr
+				
+				$config
+				$machine
+				$scriptBlock = { param($p1,$p2) pushd C:\Hwebsource\scripts
+				C:\Hwebsource\scripts\Flashdeploy.ps1 -environmentconfig $p1 -MachineConfig $p2	
+				}
+				$argsList = $config,$machine
+				
+
+				executeScriptInRemoteSession -scriptBlock $scriptBlock -argsList $argsList -deployLoginame $currentexecuter -deployUserPassword $password -serverFQDN $destinationWinRMServer
+				
+			}
+			else
+			{
+				$MachineSpecific = $loc.path +"\MachineSpecifics\"+ $machine.HwebName
+				TestPath  -path $MachineSpecific			
+				CopyPackage -IP $machine.MachineIp -User $currentexecuter -Password $password -Source $machine.PackageSource -Destination $Destination
+				CopyPackage -IP $machine.MachineIp -User $currentexecuter -Password $password -Source  $MachineSpecific -Destination $Destination
+#>
+# # # # #  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+# # # # # # # Modified in new runBuildoutScripts.ps1 script. # # # # #				
+				$config
+				$machine
+				if ($nodatabase)
+				{
+					$scriptBlock = { param($p1,$p2) pushd C:\Hwebsource\scripts
+					C:\Hwebsource\scripts\scriptbooter.ps1 -config $p1	-MachineConfig $p2  -noDatabase	
+					}
+					$argsList = $config,$machine
+
+					executeScriptInRemoteSession -scriptBlock $scriptBlock -argsList $argsList -deployLoginame $currentexecuter -deployUserPassword $password -serverFQDN $destinationWinRMServer
+				}
+				else
+				{
+					$scriptBlock = { param($p1,$p2) pushd C:\Hwebsource\scripts
+					C:\Hwebsource\scripts\scriptbooter.ps1 -config $p1	-MachineConfig $p2	
+					}
+					$argsList = $config,$machine
+
+					executeScriptInRemoteSession -scriptBlock $scriptBlock -argsList $argsList -deployLoginame $currentexecuter -deployUserPassword $password -serverFQDN $destinationWinRMServer				
+				}
+# # # # #  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #				
+			}
+			
+
+		}
+	
+	}
+}
+
+if($FlashDeploy)
+{
+	stop-transcript
+}	
