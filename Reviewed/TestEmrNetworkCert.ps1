@@ -51,10 +51,11 @@ Write-Host -ForegroundColor Yellow "Debug 3" `n
 Write-Host -ForegroundColor Yellow "`n The following is what is passed to the command line."
 
 $NetworkService_EMR = "$wincertdir -g -a" + " Network Service " + "-c LOCAL_MACHINE\My -s $emrsubject"
-Write-host -ForegroundColor Yellow "$NetworkService_EMR" `n
+Write-host -ForegroundColor Magenta "$NetworkService_EMR" `n
 
-# The following runs the command from above.
-#$NetworkService_EMR
+Write-Host -ForegroundColor Yellow "Debug 4" `n
+# The following runs the command from above. Where & is the call operator
+& $NetworkService_EMR
 
 # Pass the command line to the Test_NetworkService_EMR log.
 #$NetworkService_EMR | Set-Content -path "E:\healthvault\Test_NetworkService_EMR $filedate.log"
