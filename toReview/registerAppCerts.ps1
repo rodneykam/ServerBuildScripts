@@ -40,7 +40,7 @@ $NewLogFile = New-Item $Path -Force -ItemType File
 $Logfile = $Path
 
 # Import the Logfile function.
-Import-module C:\Hwebsource\scripts\LogfileFunction.psm1
+Import-module C:\Hwebsource\scripts\LogfileFunction.ps1
 
 # Added LogWrite to populate the log file everywhere there was a throw statement
 # Added this to suppress errors to the console
