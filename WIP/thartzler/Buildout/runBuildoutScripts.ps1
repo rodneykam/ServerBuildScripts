@@ -7,7 +7,6 @@
 ##
 ##############################################################################
 
-
 <#
 .SYNOPSIS
 	This script provides a means to run a set of nested scripts or an individual script as warranted to facilitate 
@@ -42,28 +41,32 @@
 	AppFabricSetup.ps1			(12)
 	registerAppCerts.ps1		(13)		
 	buildoutAllScripts.ps1 		(99)
+
+	$script is a comma-delimited list of servers to deploy to. This overrides the "CodeDeployed" flag on
+	the buildoutSetup.config configuration for the server. Leave this blank to use the buildoutSetup.config 
+	configuration.
 	
 .EXAMPLE 
 	To run the complete set of buildout scripts:        
-	runBuildoutScripts.ps1 -EnvironmentPrefix Prod -noDatase 99
+	runBuildoutScripts.ps1 -EnvironmentPrefix Prod -noDatase -scriptNumber 99
 
 .EXAMPLE
 	To only run one of scripts from the buildout scripts list, enter the corresponding script number 1:
 	runBuildoutScripts.ps1 -EnvironmentPrefix Prod -noDatabase 1
 #>
 
-
 param (
 	[string] $EnvironmentPrefix = $(throw "You must specify a environment."),
 	[string] $scriptNumber = $(throw "script number missing"),
 	$servers=$null,
-	[switch]$noDatabase
+	[switch]$noDatabase,
+	[switch]$runLocal
 	)
+	
+Write-host -ForegroundColor Green "`nStart of runBuildoutScripts`n"
 
-
-# Import-Module that contains custom functions
-    
-    Import-Module -Name .\BuildoutPackageExecuterFunctions.ps1
+# Import custom functions
+Import-Module -Name .\BuildoutPackageExecuterFunctions.ps1
 
 # Check if current console has admin rights
 $isAdmin = $null
@@ -72,139 +75,138 @@ $error.clear()
 
 # Change to the working directory and set config file path
 $loc=get-location
-
 $configFilePath = $loc.path +"\"+"buildoutSetup.config"
-
-TestPath  -path $configFilePath
-
+TestPath -path $configFilePath
 $currentuser= [Environment]::UserName
 
 # Load the configuration file and set the parameters we will pass to the target script
 $config= XMLParser -filepath $configFilePath -nodequalifier $EnvironmentPrefix
-
 $machines= $config.machines.machine
 
-# Check if there are more than one target servers
-
-$servers=$servers |sort -unique
-
+# Were specific target servers requested?
 $Serverlist=@()
 
 if($servers)
 {
-	foreach($server in $servers)
-	{
-		if (!(($server -ge 0) -and ($server -le $machines.count)))
-		{
-			write-host -foregroundcolor Yellow "The $server input is not correct. Here is what you entered $servers"
-			exit
-		}
-		else
-		{
-			$Serverlist+=$server
-		}
-
+	$servers=$servers | sort -unique
+	foreach($server in $servers) {
+		$Serverlist+=$server
 	}
-	$count=0
 }
 
 # Make sure we have a server selected from buildoutSetup.config
-# Look for the target server in the configuration file.
+# Override that server selection if $server value(s) were passed into the script 
 # <codedeployed> flag will be false for the server that is being built.
-
+$serverCount=0
 if ($machines.count)
 {
+	# Loop through each of the machines in the configuration
 	foreach ($machine in $machines)
 	{
-	    if($serverlist)
+	    $Hwebname=$machine.HwebName
+		write-host -ForegroundColor Yellow "Reading data for Web server $Hwebname"
+		
+		# If one or more server number was passed into the script, only use those servers
+		if($serverlist)
 	    {
-			$Hwebnumber=((([int](((($machine.HwebName).split("."))[0])[-2]))-48)*10)+((([int](((($machine.HwebName).split("."))[0])[-1]))-48))
-			if ($Hwebnumber -eq $serverlist[$count])
+			# Obtain the server number from the configuration list
+			# Web server name is in the format "SJPRWEBxx.RHF.AD", e.g. "SJPRWEB12.RHF.AD"
+			$machine.HwebName -match "\d+"
+			$Hwebnumber=$matches[0]
+			if (!($Hwebnumber)) {
+				write-host -ForegroundColor Red "Cannot read server number from configuration file"
+				exit
+			}
+
+			# "-contains" ignores leading zeros
+			if ($serverlist -contains $Hwebnumber)
 			{
 				$ReadyForDeploy=$True
-				$count++
-				write-host -ForegroundColor Yellow "Incremented Machine Count: $count"
-				
+				$serverCount++
+				write-host -ForegroundColor Yellow "Web server $Hwebname will be processed"
+				write-host -ForegroundColor Yellow "Incremented Machine Count: $serverCount"		
 			}
 			else
 			{
 				$ReadyForDeploy=$False
-				write-host -ForegroundColor Red "Buildout script debug 1"
-			}			
+				write-host -ForegroundColor Yellow "Web server $Hwebname will not be processed"
+				}			
             }
-	    else
+	    # If no server number was passed into the script, determine which servers to process according to the machine configuration file
+		else
 	    {
 			if($machine.codedeployed -match "False")
 			{
 				$ReadyForDeploy=$True
-				write-host -ForegroundColor Red "Buildout script debug 2"				
+				write-host -ForegroundColor Yellow "Web server $Hwebname will be processed"
 			}
 			else
 			{
 				$ReadyForDeploy=$False
-				write-host -ForegroundColor Red "Buildout script debug 3"
+				write-host -ForegroundColor Yellow "Web server $Hwebname will not be processed"
 			}
 	    }
 	
-		write-host -ForegroundColor yellow "Working on ready for deploy = true."	
-
 	    if($ReadyForDeploy -eq $True)
 	    {	
-		$HwebName=$machine.HwebName
-		write-host -ForegroundColor green "You are going to execute on $HwebName"
-		$destinationWinRMServer = [string]::Format("{0}", $machine.HwebName)
-			
-		$currentexecuter= $machine.domain +"\"+"$currentuser"
-		if(!($password))
-		{
-		    $password=SetPassword -user $currentexecuter 
-		}
-		$Destination = "\\"+$machine.MachineIp+"\"+$machine.PackageDestination
-		
-		write-host -ForegroundColor Red "Buildout script debug 4"
-		
-			
-		# Run the script indicated by the script number entered in the run command
-		if ($nodatabase)
-		{
-			if ($scriptNumber -eq 99)
-			{       
-				Write-host -ForegroundColor Green "`nscriptNumber = 99, Running buildoutAllScripts_test.ps1"
-				 $scriptBlock = { param($p1,$p2) pushd C:\Hwebsource\scripts
-				 #C:\Hwebsource\scripts\buildoutAllScripts_test.ps1 -config $p1 -MachineConfig $p2 -noDatabase
-				 #C:\Hwebsource\scripts\buildoutAllScripts_test.ps1 $p1 $p2 -noDatabase
-				 C:\Hwebsource\scripts\buildoutAllScripts_test.ps1 $p1 $p2
-				 }
-			     $argsList = $config,$machine
-			     executeScriptInRemoteSession -scriptBlock $scriptBlock -argsList $argsList -deployLoginame $currentexecuter -deployUserPassword $password -serverFQDN $destinationWinRMServer			      
-			}
-			elseif ($scriptNumber -eq 1)
-			{       
-				Write-host -ForegroundColor Green "`nscriptNumber = 1, Running permtest_mod.ps1"
-				 $scriptBlock = { param($p1,$p2) pushd C:\Hwebsource\scripts
-				 C:\Hwebsource\scripts\permtest_mod.ps1 $p1 $p2
-				 }
-			     $argsList = $config,$machine
-			     executeScriptInRemoteSession -scriptBlock $scriptBlock -argsList $argsList -deployLoginame $currentexecuter -deployUserPassword $password -serverFQDN $destinationWinRMServer			      
-			}
-			elseif ($scriptNumber -eq 2)
-			{
-				Write-host -ForegroundColor Green "`nscriptNumber = 2, Running registerAppCerts.ps1"
-				 $scriptBlock = { param($p1,$p2) pushd C:\Hwebsource\scripts
-				 C:\Hwebsource\scripts\registerAppCerts.ps1 $p1 $p2
-				 }
-				 $argsList = $config,$machine
-			     executeScriptInRemoteSession -scriptBlock $scriptBlock -argsList $argsList -deployLoginame $currentexecuter -deployUserPassword $password -serverFQDN $destinationWinRMServer			      
-   			}
-			else
-			{
-				Write-host -ForegroundColor Red "`nThe scriptNumber entered does not match validation list, not running any scripts."
-			}
-		  
-		}
-		
-	     }
+			write-host -ForegroundColor green "You are going to execute on $Hwebname"
+							
+			# Run the script indicated by the script number entered in the run command
+			# Currently all scripts are in "test" mode with "_test" appended to end of script name. 
+			# Remove "_test" after it is known that the script works correctly.
+			$ScriptList=@()
+			if ($scriptNumber -eq 1  -or $scriptNumber -eq 99) {$ScriptList+="hostnamessingleip_test.ps1"}
+			if ($scriptNumber -eq 2  -or $scriptNumber -eq 99) {$ScriptList+="dotnetcharge_test.ps1"}
+			if ($scriptNumber -eq 3  -or $scriptNumber -eq 99) {$ScriptList+="stats_test.ps1"}
+			if ($scriptNumber -eq 4  -or $scriptNumber -eq 99) {$ScriptList+="permtest_test.ps1"}
+			if ($scriptNumber -eq 5  -or $scriptNumber -eq 99) {$ScriptList+="metascan_test.ps1"}
+			if ($scriptNumber -eq 6  -or $scriptNumber -eq 99) {$ScriptList+="audit_test.ps1"}
+			if ($scriptNumber -eq 7  -or $scriptNumber -eq 99) {$ScriptList+="wintertree_test.ps1"}
+			if ($scriptNumber -eq 8  -or $scriptNumber -eq 99) {$ScriptList+="hiddenshares_test.ps1"}
+			if ($scriptNumber -eq 9  -or $scriptNumber -eq 99) {$ScriptList+="Msutil_test.ps1"}
+			if ($scriptNumber -eq 10 -or $scriptNumber -eq 99) {$ScriptList+="SetFolderPermissions_test.ps1"}
+			if ($scriptNumber -eq 11 -or $scriptNumber -eq 99) {$ScriptList+="Initiate_test.ps1"}
+			if ($scriptNumber -eq 12 -or $scriptNumber -eq 99) {$ScriptList+="AppFabricSetup_test.ps1"}
+			if ($scriptNumber -eq 13 -or $scriptNumber -eq 99) {$ScriptList+="registerAppCerts_test.ps1"}
+			if ($scriptNumber -eq 14 -or $scriptNumber -eq 99) {$ScriptList+="buildoutAllScripts_test.ps1"}
 
+			if (!($ScriptList)) {
+					Write-host -ForegroundColor Red "`nThe scriptNumber $scriptNumber entered does not match validation list, not running any scripts."
+					exit
+			}
+			
+			# Loop thorugh the selected scripts
+			foreach ($scriptName in $ScriptList) {
+				Write-host -ForegroundColor Green "`nExecuting script $scriptName"
+				
+				# Either run in current directory on current server, or run on remote server
+				if ($runLocal) {
+					Write-host -ForegroundColor Green "Executing on local server $destinationWinRMServer"
+					try
+					{
+						Invoke-Expression -command "$scriptName -EnvironmentConfig $config -MachineConfig $machine"
+						write-host "Command execution successful"
+					}
+					finally {}
+				}
+				else {
+					$destinationWinRMServer = [string]::Format("{0}", $machine.HwebName)
+						
+					$currentexecuter= $machine.domain +"\"+"$currentuser"
+					$password=SetPassword -user $currentexecuter 
+					$Destination = "\\"+$machine.MachineIp+"\"+$machine.PackageDestination
+
+					Write-host -ForegroundColor Green "Executing on remote server $destinationWinRMServer"
+					$scriptBlock = { 
+						param($p1,$p2) pushd C:\Hwebsource\scripts
+						C:\Hwebsource\scripts\$scriptName $p1 $p2
+						$argsList = $config,$machine
+				}
+					executeScriptInRemoteSession -scriptBlock $scriptBlock -argsList $argsList -deployLoginame $currentexecuter -deployUserPassword $password -serverFQDN $destinationWinRMServer
+				}
+				Write-host -ForegroundColor Green "Script execution complete for $scriptName"
+			}
+		}
 	}	
 }
 Write-host -ForegroundColor Green "`nEnd of runBuildoutScripts"
