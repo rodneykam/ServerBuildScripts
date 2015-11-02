@@ -1,0 +1,12 @@
+#### What do we want this script to do ?
+1. Read in the $EnviromentConfig variable
+2. Read in the MachinCanfig variable that is derived from the buildoutSetup.config file 
+    using the XMLParser found in the BuildoutPackageExecuterFunctions.ps1. 
+    This is done in the "Wrapper" and passed to this scrpt.
+3. Set the account variable to the MachineConfig.RelayServicesAccount found in the Machine config object.
+4. Write out results to the logfile
+5. Check that the account(s) exist 
+6. locate winhttpcertcfg.exe
+7. Check the certificate directory for the proper certs "healthvault.relayhealth.com","emr-prod.relayhealth.com" and "$vortex-prod.relayhealth.com"
+8. For each certificat write two command lines. One for "Network Service" and one for the RelayServicesAccount.
+9. Invoke each command line and verify that they completed. Log the results or any errors.
