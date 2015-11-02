@@ -58,7 +58,7 @@ Write-Host -ForegroundColor Yellow "Debug 4" `n
 & $NetworkService_EMR
 
 # Pass the command line to the Test_NetworkService_EMR log.
-#$NetworkService_EMR | Set-Content -path "E:\healthvault\Test_NetworkService_EMR $filedate.log"
+$NetworkService_EMR | Set-Content -path "E:\healthvault\Test_NetworkService_EMR $filedate.log"
 
 Write-Host -ForegroundColor Yellow "End of test script" `n
 
