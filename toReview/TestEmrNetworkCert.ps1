@@ -60,4 +60,4 @@ Write-host -ForegroundColor Yellow "$NetworkService_EMR" `n
 
 $NetworkService_EMR | out-file -filepath F:\SCM\buildout\buildoutlogs\Test_NetworkService_EMR.log
 
-Write-Host -ForegroundColor Yellow "Debug 4" `n
+Write-Host -ForegroundColor Yellow "End of Test_NetworkService_EMR script." `n
