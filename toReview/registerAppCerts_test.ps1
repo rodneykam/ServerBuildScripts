@@ -91,6 +91,7 @@ else
 	Write-Host -ForegroundColor Yellow "   Found the emr_prod certificate."
 }
 
+
 # Check for the existance of the healthvault certificate in the cert directory
 if([string]::IsNullOrEmpty($hvaultcert))
 {
@@ -100,6 +101,7 @@ else
 {
 	Write-Host -ForegroundColor Yellow "   Found the healthvault certificate."
 }
+
 
 # Check for the existance of the VortexrToolsClient certificate in the cert directory
 if([string]::IsNullOrEmpty($vortexcert))
@@ -116,6 +118,7 @@ write-host -foreground Green "`n registerAppCerts - Checking for or Creating bat
 # Show the emrcert subject on the host console
 #$emrcert.subject
 
+write-host -foreground Yellow "`n Working on NetworkService_EMR.bat."
 $Network_EMR = "E:\RegisterAppCert\NetworkService_EMR.bat"
 if (-Not (test-path $Network_EMR)) 
 {
@@ -128,11 +131,61 @@ if (-Not (test-path $Network_EMR))
 }
 else
 {
-	Write-Host -ForegroundColor Yellow "   File NetworkService_EMR.bat already exists. Not creating a new one."
+	Write-Host -ForegroundColor Red "   File NetworkService_EMR.bat already exists. Removing and creating a new one."
+	get-childitem "E:\RegisterAppCert\NetworkService_EMR.bat" | Remove-Item -force
+	New-Item $Network_EMR -type file             
+    add-content -path $Network_EMR -value "@SET WC_CERTNAME= $emrsubject"              
+    add-content -path $Network_EMR -value "@`"$certConfig`" -g -a 'Network Service' -c LOCAL_MACHINE\My -s %WC_CERTNAME%"            
+    add-content -path $Network_EMR -value "@SET WC_CERTNAME="
 }
 
 
-               
+write-host -foreground Yellow "`n Working on NetworkService_HealthVault.bat."
+$Network_HV = "E:\RegisterAppCert\NetworkService_HealthVault.bat"
+if (-Not (test-path $Network_HV)) 
+{
+	Write-Host -ForegroundColor Red "   File NetworkService_HealthVault.bat does not exist."
+	Write-Host -ForegroundColor Yellow "   Creating file NetworkService_HealthVault.bat. `n"
+	New-Item $Network_HV -type file             
+    add-content -path $Network_HV -value "@SET WC_CERTNAME= $hvaultsubject"              
+    add-content -path $Network_HV -value "@`"$certConfig`" -g -a 'Network Service' -c LOCAL_MACHINE\My -s %WC_CERTNAME%"            
+    add-content -path $Network_HV -value "@SET WC_CERTNAME="
+}
+else
+{
+	Write-Host -ForegroundColor Red "   File NetworkService_HealthVault.bat already exists. Removing and creating a new one. `n"
+	get-childitem "E:\RegisterAppCert\NetworkService_HealthVault.bat" | Remove-Item -force
+	New-Item $Network_HV -type file             
+    add-content -path $Network_HV -value "@SET WC_CERTNAME= $hvaultsubject"              
+    add-content -path $Network_HV -value "@`"$certConfig`" -g -a 'Network Service' -c LOCAL_MACHINE\My -s %WC_CERTNAME%"            
+    add-content -path $Network_HV -value "@SET WC_CERTNAME="
+}               
+
+ 
+write-host -foreground Yellow "`n Working on NetworkService_VortexrTools.bat."
+$Network_VT = "E:\RegisterAppCert\NetworkService_VortexrTools.bat"
+if (-Not (test-path $Network_VT)) 
+{
+	Write-Host -ForegroundColor Red "   File NetworkService_VortexrTools.bat does not exist."
+	Write-Host -ForegroundColor Yellow "   Creating file NetworkService_VortexrTools.bat. `n"
+	New-Item $Network_VT -type file             
+    add-content -path $Network_VT -value "@SET WC_CERTNAME= $vortexsubject"              
+    add-content -path $Network_VT -value "@`"$certConfig`" -g -a 'Network Service' -c LOCAL_MACHINE\My -s %WC_CERTNAME%"            
+    add-content -path $Network_VT -value "@SET WC_CERTNAME="
+}
+else
+{
+	Write-Host -ForegroundColor Red "   File NetworkService_VortexrTools.bat already exists. Removing and creating a new one. `n"
+	get-childitem "E:\RegisterAppCert\NetworkService_VortexrTools.bat" | Remove-Item -force
+	New-Item $Network_VT -type file             
+    add-content -path $Network_VT -value "@SET WC_CERTNAME= $vortexsubject"              
+    add-content -path $Network_VT -value "@`"$certConfig`" -g -a 'Network Service' -c LOCAL_MACHINE\My -s %WC_CERTNAME%"            
+    add-content -path $Network_VT -value "@SET WC_CERTNAME="
+}               
+
+
+
+
 
 write-host -foreground Green "`n registerAppCerts - Running batch files section."
 write-host -foreground Yellow "   Intentionally not running at this time. `n"
