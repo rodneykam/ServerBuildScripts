@@ -140,7 +140,7 @@ if ($machines.count)
 			}
 	    }
 	
-		write-host -ForegroundColor Green "`nBuildout script - Getting machine data. `n"	
+		write-host -ForegroundColor Green "`nBuildout script - Getting machine data."	
 
 	    if($ReadyForDeploy -eq $True)
 	    {	
@@ -163,7 +163,7 @@ if ($machines.count)
 		{
 			if ($scriptNumber -eq 99)
 			{       
-				Write-host -ForegroundColor Green "`nBuildout script - scriptNumber = 99, Running buildoutAllScripts_test.ps1 script. `n"
+				Write-host -ForegroundColor Green "Buildout script - scriptNumber = 99, Running buildoutAllScripts_test.ps1 script. `n"
 				 $scriptBlock = { param($p1,$p2) pushd C:\Hwebsource\scripts
 				 C:\Hwebsource\scripts\buildoutAllScripts_test.ps1 $p1 $p2
 				 }
@@ -172,7 +172,7 @@ if ($machines.count)
 			}
 			elseif ($scriptNumber -eq 1)
 			{       
-				Write-host -ForegroundColor Green "`nBuildout script - scriptNumber = 1, Running permtest_test script. `n"
+				Write-host -ForegroundColor Green "Buildout script - scriptNumber = 1, Running permtest_test script. `n"
 				 $scriptBlock = { param($p1,$p2) pushd C:\Hwebsource\scripts
 				 C:\Hwebsource\scripts\permtest_test.ps1 $p1 $p2
 				 }
@@ -181,7 +181,7 @@ if ($machines.count)
 			}
 			elseif ($scriptNumber -eq 2)
 			{
-				Write-host -ForegroundColor Green "`nBuildout script - scriptNumber = 2, Running registerAppCerts_test.ps1 script. `n"
+				Write-host -ForegroundColor Green "Buildout script - scriptNumber = 2, Running registerAppCerts_test.ps1 script. `n"
 				 $scriptBlock = { param($p1,$p2) pushd C:\Hwebsource\scripts
 				 C:\Hwebsource\scripts\registerAppCerts_test.ps1 $p1 $p2
 				 }
