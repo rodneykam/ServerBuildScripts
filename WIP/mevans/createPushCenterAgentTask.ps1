@@ -1,6 +1,6 @@
 #############################################################################
 ##
-## configureInitiate
+## createPushCernterAgentTask
 ##   
 ## 10/2015, RelayHealth
 ## Martin Evans
@@ -9,8 +9,8 @@
 
 <#
 .SYNOPSIS
-	This script creates the PUdh Center scheduled task on a web server. That task allows the automated 
-	unzip of code during code deployment
+	This script creates the Push Center scheduled task on a web server. That task allows the automated 
+	unzip of code during code deployment.
         
 .DESCRIPTION
 	
@@ -27,8 +27,13 @@ param
 
 Write-host -ForegroundColor Green "`nStart of Create Push Center Agent scheduled task script`n"
 
-$Account = [String]$MachineConfig.ScheduledTaskAccount	
+$Account = [String]$MachineConfig.ScheduledTaskAccount
 $Password = [String]$MachineConfig.ScheduledTaskPassword
+
+if (!( test-path -Path PushCenterAgent.xml)) {
+	Write-host -ForegroundColor Red "Cannot find Scheduled Task configuration file PushCenterAgent.xml"
+	exit
+}
 
 Write-host -ForegroundColor Green "Running command: schtasks /Create /XML ./PushCenterAgent.xml /TN $taskName /RU `"$Account`" /RP `"xxxxx`" /F"
 # Note that the expression " 2>&1" pipes the command output into the return code $result
