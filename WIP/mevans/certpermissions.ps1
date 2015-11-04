@@ -1,7 +1,7 @@
 #############################################################################
 ##
-## configureInitiate
-##   
+## certpermissions
+##
 ## 10/2015, RelayHealth
 ## Martin Evans
 ##
@@ -10,7 +10,9 @@
 <#
 .SYNOPSIS
 	This script applies permissions to certificates to grant certain accounts to utilize those certificates.
-        
+
+	Includes a verification that the certificate permissions have been granted
+	
 .DESCRIPTION
 
 	Expected output of the raw winhttpcertcfg.exe application is:
