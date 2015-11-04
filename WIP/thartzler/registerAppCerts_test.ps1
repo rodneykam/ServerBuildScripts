@@ -29,14 +29,12 @@ param
 [Parameter(Mandatory=$true)] $MachineConfig
 )
 
-write-host -foreground Magenta "`n # # # Entering registerAppCert script. # # # "
+write-host -foreground green "`n # # # Entering registerAppCert script. # # # "
 
 $Error.clear()
 
 $filedate =(Get-Date).ToString("yyyyMMddhhmmss")
 
-# The Relay service account to use which is in the buildoutSetup.config file
-$account = [String]$MachineConfig.RelayServicesAccount
 
 pushd E:\Relayhealth\Deployhelp
 
@@ -45,9 +43,11 @@ $wincertdir = "E:\RegisterAppCert"
 $certConfig = "E:\RegisterAppCert\winhttpcertcfg.exe"  #executable that gets run in each batch file
 
 
-# Test for existence of the E:\RegisterAppCert folder and the winhttpcertcfg.exe file
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 write-host -foreground Green "`n registerAppCerts -  Checking for existing RegisterAppCert folder and file section."
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
+# Test for existence of the E:\RegisterAppCert folder and the winhttpcertcfg.exe file
 if (-Not (test-path $wincertdir)) 
 {
 	Write-Host -ForegroundColor Red "   The E:\RegisterAppCert folder does not exist."
@@ -67,6 +67,10 @@ else
 	Write-Host -ForegroundColor Yellow "   The file winhttpcertcfg.exe exists"
 }
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+write-host -foreground Green "`n registerAppCerts -  Checking for existing certificates section."
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
 # Set the certificate subject value for each certificate
 $emrsubject = "emr-prod.relayhealth.com"
 $hvaultsubject = "healthvault.relayhealth.com"
@@ -74,7 +78,6 @@ $vortexsubject = "VortexrToolsClient"
 
 popd
 
-write-host -foreground Green "`n registerAppCerts -  Checking for existing certificates section."
 # Read certificate subject value in to memory and set it to the $xxxcert vaiable
 $emrcert = gci cert:\LocalMachine\MY | where-object {$_.Subject -match "$emrsubject"}
 $hvaultcert = gci cert:\LocalMachine\MY | where-object {$_.Subject -match "$hvaultsubject"}
@@ -91,6 +94,7 @@ else
 	Write-Host -ForegroundColor Yellow "   Found the emr_prod certificate."
 }
 
+
 # Check for the existance of the healthvault certificate in the cert directory
 if([string]::IsNullOrEmpty($hvaultcert))
 {
@@ -100,6 +104,7 @@ else
 {
 	Write-Host -ForegroundColor Yellow "   Found the healthvault certificate."
 }
+
 
 # Check for the existance of the VortexrToolsClient certificate in the cert directory
 if([string]::IsNullOrEmpty($vortexcert))
@@ -111,31 +116,159 @@ else
 	Write-Host -ForegroundColor Yellow "   Found the VortexrToolsClient certificate."
 }
 
-write-host -foreground Green "`n registerAppCerts - Checking for or Creating batch files section."
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+write-host -foreground Green "`n registerAppCerts - Creating the Network_Service batch files section."
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
-# Show the emrcert subject on the host console
-#$emrcert.subject
-
+write-host -foreground Yellow "`n Working on NetworkService_EMR.bat."
 $Network_EMR = "E:\RegisterAppCert\NetworkService_EMR.bat"
 if (-Not (test-path $Network_EMR)) 
 {
-	Write-Host -ForegroundColor Red "   File NetworkService_EMR.bat does not exist."
+	Write-Host -ForegroundColor Yellow "   File NetworkService_EMR.bat does not exist."
 	Write-Host -ForegroundColor Yellow "   Creating file NetworkService_EMR.bat."
 	New-Item $Network_EMR -type file             
     add-content -path $Network_EMR -value "@SET WC_CERTNAME= $emrsubject"              
-    add-content -path $Network_EMR -value "@`"$certConfig`" -g -a 'Network Service' -c LOCAL_MACHINE\My -s %WC_CERTNAME%"            
+    add-content -path $Network_EMR -value "@`"$certConfig`" -g -a `"Network Service`" -c LOCAL_MACHINE\My -s %WC_CERTNAME%"            
     add-content -path $Network_EMR -value "@SET WC_CERTNAME="
 }
 else
 {
-	Write-Host -ForegroundColor Yellow "   File NetworkService_EMR.bat already exists. Not creating a new one."
+	Write-Host -ForegroundColor Yellow "   File NetworkService_EMR.bat already exists. Removing and creating a new one."
+	get-childitem "E:\RegisterAppCert\NetworkService_EMR.bat" | Remove-Item -force
+	New-Item $Network_EMR -type file             
+    add-content -path $Network_EMR -value "@SET WC_CERTNAME= $emrsubject"              
+    add-content -path $Network_EMR -value "@`"$certConfig`" -g -a `"Network Service`" -c LOCAL_MACHINE\My -s %WC_CERTNAME%"            
+    add-content -path $Network_EMR -value "@SET WC_CERTNAME="
 }
 
 
-               
+write-host -foreground Yellow "`n Working on NetworkService_HealthVault.bat."
+$Network_HV = "E:\RegisterAppCert\NetworkService_HealthVault.bat"
+if (-Not (test-path $Network_HV)) 
+{
+	Write-Host -ForegroundColor Yellow "   File NetworkService_HealthVault.bat does not exist."
+	Write-Host -ForegroundColor Yellow "   Creating file NetworkService_HealthVault.bat. `n"
+	New-Item $Network_HV -type file             
+    add-content -path $Network_HV -value "@SET WC_CERTNAME= $hvaultsubject"              
+    add-content -path $Network_HV -value "@`"$certConfig`" -g -a `"Network Service`" -c LOCAL_MACHINE\My -s %WC_CERTNAME%"            
+    add-content -path $Network_HV -value "@SET WC_CERTNAME="
+}
+else
+{
+	Write-Host -ForegroundColor Yellow "   File NetworkService_HealthVault.bat already exists. Removing and creating a new one. `n"
+	get-childitem "E:\RegisterAppCert\NetworkService_HealthVault.bat" | Remove-Item -force
+	New-Item $Network_HV -type file             
+    add-content -path $Network_HV -value "@SET WC_CERTNAME= $hvaultsubject"              
+    add-content -path $Network_HV -value "@`"$certConfig`" -g -a `"Network Service`" -c LOCAL_MACHINE\My -s %WC_CERTNAME%"            
+    add-content -path $Network_HV -value "@SET WC_CERTNAME="
+}               
 
+ 
+write-host -foreground Yellow "`n Working on NetworkService_VortexrTools.bat."
+$Network_VT = "E:\RegisterAppCert\NetworkService_VortexrTools.bat"
+if (-Not (test-path $Network_VT)) 
+{
+	Write-Host -ForegroundColor Yellow "   File NetworkService_VortexrTools.bat does not exist."
+	Write-Host -ForegroundColor Yellow "   Creating file NetworkService_VortexrTools.bat. `n"
+	New-Item $Network_VT -type file             
+    add-content -path $Network_VT -value "@SET WC_CERTNAME= $vortexsubject"              
+    add-content -path $Network_VT -value "@`"$certConfig`" -g -a `"Network Service`" -c LOCAL_MACHINE\My -s %WC_CERTNAME%"            
+    add-content -path $Network_VT -value "@SET WC_CERTNAME="
+}
+else
+{
+	Write-Host -ForegroundColor Yellow "   File NetworkService_VortexrTools.bat already exists. Removing and creating a new one. `n"
+	get-childitem "E:\RegisterAppCert\NetworkService_VortexrTools.bat" | Remove-Item -force
+	New-Item $Network_VT -type file             
+    add-content -path $Network_VT -value "@SET WC_CERTNAME= $vortexsubject"              
+    add-content -path $Network_VT -value "@`"$certConfig`" -g -a `"Network Service`" -c LOCAL_MACHINE\My -s %WC_CERTNAME%"            
+    add-content -path $Network_VT -value "@SET WC_CERTNAME="
+}               
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+write-host -foreground Green "`n registerAppCerts - Creating the ServerName batch files section."
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+<#  Sample servername bat file
+@SET WC_CERTNAME= emr-prod.relayhealth.com
+@"E:\healthvault\winhttpcertcfg.exe" -g -a "SJPRWEB30SERV@RHF.AD"  -c LOCAL_MACHINE\My -s %WC_CERTNAME%
+@SET WC_CERTNAME=
+#>
+
+#$account = [String]$MachineConfig.RelayServicesAccount  # RHF.AD\SJPRWEB34SERV
+$account = [String]$MachineConfig.HVRelayServicesAccount # returns SJPRWEB34SERV@RHF.AD
+
+write-host -foreground Yellow "`n Working on ServerName_EMR.bat."
+$Server_EMR = "E:\RegisterAppCert\ServerName_EMR.bat"
+if (-Not (test-path $Server_EMR)) 
+{
+	Write-Host -ForegroundColor Yellow "   File ServerName_EMR.bat does not exist."
+	Write-Host -ForegroundColor Yellow "   Creating file ServerName_EMR.bat."
+	New-Item $Server_EMR -type file             
+    add-content -path $Server_EMR -value "@SET WC_CERTNAME= $emrsubject"              
+    add-content -path $Server_EMR -value "@`"$certConfig`" -g -a `"$account`" -c LOCAL_MACHINE\My -s %WC_CERTNAME%"            
+    add-content -path $Server_EMR -value "@SET WC_CERTNAME="
+}
+else
+{
+	Write-Host -ForegroundColor Yellow "   File ServerName_EMR.bat already exists. Removing and creating a new one."
+	get-childitem "E:\RegisterAppCert\ServerName_EMR.bat" | Remove-Item -force
+	New-Item $Server_EMR -type file             
+    add-content -path $Server_EMR -value "@SET WC_CERTNAME= $emrsubject"              
+    add-content -path $Server_EMR -value "@`"$certConfig`" -g -a `"$account`" -c LOCAL_MACHINE\My -s %WC_CERTNAME%"            
+    add-content -path $Server_EMR -value "@SET WC_CERTNAME="
+} 
+
+write-host -foreground Yellow "`n Working on ServerName_HealthVault.bat."
+$Server_HV = "E:\RegisterAppCert\ServerName_HealthVault.bat"
+if (-Not (test-path $Server_HV)) 
+{
+	Write-Host -ForegroundColor Yellow "   File ServerName_HealthVault.bat does not exist."
+	Write-Host -ForegroundColor Yellow "   Creating file ServerName_HealthVault.bat."
+	New-Item $Server_HV -type file             
+    add-content -path $Server_HV -value "@SET WC_CERTNAME= $hvaultsubject"              
+    add-content -path $Server_HV -value "@`"$certConfig`" -g -a `"$account`" -c LOCAL_MACHINE\My -s %WC_CERTNAME%"            
+    add-content -path $Server_HV -value "@SET WC_CERTNAME="
+}
+else
+{
+	Write-Host -ForegroundColor Yellow "   File ServerName_HealthVault.bat already exists. Removing and creating a new one."
+	get-childitem "E:\RegisterAppCert\ServerName_HealthVault.bat" | Remove-Item -force
+	New-Item $Server_HV -type file             
+    add-content -path $Server_HV -value "@SET WC_CERTNAME= $hvaultsubject"              
+    add-content -path $Server_HV -value "@`"$certConfig`" -g -a `"$account`" -c LOCAL_MACHINE\My -s %WC_CERTNAME%"            
+    add-content -path $Server_HV -value "@SET WC_CERTNAME="
+} 
+
+write-host -foreground Yellow "`n Working on ServerName_VortexrTools.bat."
+$Server_VT = "E:\RegisterAppCert\ServerName_VortexrTools.bat"
+if (-Not (test-path $Server_VT)) 
+{
+	Write-Host -ForegroundColor Yellow "   File ServerName_VortexrTools.bat does not exist."
+	Write-Host -ForegroundColor Yellow "   Creating file ServerName_VortexrTools.bat."
+	New-Item $Server_VT -type file             
+    add-content -path $Server_VT -value "@SET WC_CERTNAME= $vortexsubject"              
+    add-content -path $Server_VT -value "@`"$certConfig`" -g -a `"$account`" -c LOCAL_MACHINE\My -s %WC_CERTNAME%"            
+    add-content -path $Server_VT -value "@SET WC_CERTNAME="
+}
+else
+{
+	Write-Host -ForegroundColor Yellow "   File ServerName_VortexrTools.bat already exists. Removing and creating a new one."
+	get-childitem "E:\RegisterAppCert\ServerName_VortexrTools.bat" | Remove-Item -force
+	New-Item $Server_VT -type file             
+    add-content -path $Server_VT -value "@SET WC_CERTNAME= $vortexsubject"              
+    add-content -path $Server_VT -value "@`"$certConfig`" -g -a `"$account`" -c LOCAL_MACHINE\My -s %WC_CERTNAME%"            
+    add-content -path $Server_VT -value "@SET WC_CERTNAME="
+} 
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 write-host -foreground Green "`n registerAppCerts - Running batch files section."
 write-host -foreground Yellow "   Intentionally not running at this time. `n"
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+
+
 			   
 ### thartzler edit               invoke-expression $Network_EMR 
 # sleep 10
@@ -155,7 +288,7 @@ write-host -foreground Yellow "   Intentionally not running at this time. `n"
     # $Error.clear()
     # }
 
-write-host -foreground Magenta "`n # # # Exiting registerAppCert script. # # # `n"
+write-host -foreground green "`n # # # Exiting registerAppCert script. # # # `n"
 
 
 
