@@ -1,38 +1,36 @@
-# 9:13 AM 11/4/2015
-# .SYNOPSIS
-        
-# This script derives parameters that are required to run the Web Build out scrpits
-        
-# .DESCRIPTION
-        
-# This script runs multiple scripts, one after the other and logs any errors and specified information.
-# 
-# .EXAMPLE
-#       
-# .\buildoutAllScripts-Test.ps1 -config Prod -machineconfig $MachineConfig
-# To test this script: 
-#  .\buildoutAllScripts-Test.ps1 -config Prod -machineconfig xxxx
-#
-# .EXAMPLE 
-   # Writing to the log file 
-   # Write-Log -Message "Log message" 
-   # Writes the message to c:\Logs\PowerShellLog.log
-# .EXAMPLE
-   # Write-Log -Message "Restarting Server" -Path c:\Logs\Scriptoutput.log
-   # Writes the content to the specified log file and creates the path and file specified. 
-# .EXAMPLE
-   # Write-Log -Message "Does not exist" -Path c:\Logs\Script.log -Level Error
-   # Writes the message to the specified log file as an error message, and writes the message to the error pipeline.
-
-
-
-# .NOTES
-# Script Name :  buildoutAllScripts-Test.ps1    
+#######################################################################################
+# Script Name :  buildoutAllScripts-Test  Relay Health
 # Author      :  Mike Felkins       
 # Date        :  9:13 AM 11/4/2015   
 #######################################################################################
-# Script begins
 
+
+<# .SYNOPSIS
+        
+This script runs 12 scripts, one at a time.
+It also creates a log file called the Computer Name and date run.
+ 
+.DESCRIPTION
+        
+This script runs multiple scripts, one after the other.
+
+.PARAMETER <Parameter_Name>
+    <Brief description of parameter input required. Repeat this attribute if required>
+    $Config,
+    $MachineConfig,
+    [switch]$noDatabase
+    
+.EXAMPLE
+      
+.\buildoutAllScripts-Test.ps1 -config Prod -machineconfig $MachineConfig
+
+To test this script:
+ 
+ .\buildoutAllScripts-Test.ps1 -config Prod -machineconfig xxxx
+
+ #>
+
+# Script begins
     # These are the parameters that are required by this script to run.
     # $config generally is Prod. The other possibilities are to be determined.
     # $noDatabase to be determined.
@@ -45,7 +43,7 @@ param
 
 Import-Module -Name .\ScriptBooterFunctions.ps1
 
-#Test logging set up
+# Logging set up
 # Imports the Write-Log function
 # Gets the current date and time
 # Sets the logs location
@@ -68,11 +66,11 @@ GetAdmin([ref]$isAdmin)
 
 Write-Host -ForegroundColor Green "`nRunning buildoutAllScripts_test.ps1 `n"
 
-# Added this so scrpt would runn without the $MachineConfig variable.
+# Added this so script would run without the $MachineConfig variable.
 # Will be $MachineConfig.codedeployed in final script
 $codedeployed = "False"
 
-# run twelve scripts one after the other and logs the results and any errors
+# run twelve scripts one after the other. The $Path parameter is required for the script logging.
 if($codedeployed -match "False")
 {
 	
