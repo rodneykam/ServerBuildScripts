@@ -1,4 +1,4 @@
-﻿# <#
+﻿#  9:23 AM 11/4/2015
 # .Synopsis
    # Write-Log writes a message to a specified log file with the current time stamp.
 # .DESCRIPTION
@@ -19,7 +19,7 @@
    # To Do:
     # * Add error handling if trying to create a log file in a inaccessible location.
     # * Add ability to write $Message to $Verbose or $Error pipelines to eliminate
-      # duplicates.
+    # duplicates.
 
 # .EXAMPLE
    # Write-Log -Message "Log message" 
@@ -69,39 +69,45 @@ function Write-Log
     Process
     {
         
-        if ((Test-Path $Path) -AND $NoClobber) {
+        if ((Test-Path $Path) -AND $NoClobber) 
+        {
             Write-Warning "Log file $Path already exists, and you specified NoClobber. Either delete the file or specify a different name."
             Return
-            }
+        }
 
         # If attempting to write to a log file in a folder/path that doesn't exist
         # to create the file include path.
-        elseif (!(Test-Path $Path)) {
+        elseif (!(Test-Path $Path)) 
+            {
             Write-Verbose "Creating $Path."
             $NewLogFile = New-Item $Path -Force -ItemType File
             }
 
-        else {
+        else 
+            {
             # Nothing to see here yet.
             }
 
         # Now do the logging and additional output based on $Level
-        switch ($Level) {
-            'Error' {
+        switch ($Level) 
+            {
+            'Error' 
+                {
                 Write-Error $Message
                 Write-Output "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss") ERROR: $Message" | Out-File -FilePath $Path -Append
                 }
-            'Warn' {
+            'Warn' 
+                {
                 Write-Warning $Message
                 Write-Output "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss") WARNING: $Message" | Out-File -FilePath $Path -Append
                 }
-            'Info' {
-                Write-Verbose $Message
+            'Info' 
+                {
+                Write-Host $Message
                 Write-Output "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss") INFO: $Message" | Out-File -FilePath $Path -Append
                 }
             }
     }
     End
-    {
-    }
+    {}
 }
