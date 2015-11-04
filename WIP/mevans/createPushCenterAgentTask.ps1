@@ -9,7 +9,8 @@
 
 <#
 .SYNOPSIS
-	This script ... on a web server
+	This script creates the PUdh Center scheduled task on a web server. That task allows the automated 
+	unzip of code during code deployment
         
 .DESCRIPTION
 	
