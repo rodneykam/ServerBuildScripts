@@ -1,34 +1,73 @@
+#############################################################################
+##
+## configureInitiate
+##   
+## 10/2015, RelayHealth
+## Martin Evans
+##
+##############################################################################
 
-<# Expected output is:
-Microsoft (R) WinHTTP Certificate Configuration Tool
-Copyright (C) Microsoft Corporation 2001.
+<#
+.SYNOPSIS
+	This script applies permissions to certificates to grant certain accounts to utilize those certificates.
+        
+.DESCRIPTION
 
-Matching certificate:
-CN=MEVANS-Z620.healinx.inside
+	Expected output of the raw winhttpcertcfg.exe application is:
+	
+		Microsoft (R) WinHTTP Certificate Configuration Tool
+		Copyright (C) Microsoft Corporation 2001.
 
-Granting private key access for account:
-    NT AUTHORITY\NETWORK SERVICE
+		Matching certificate:
+		CN=MEVANS-Z620.healinx.inside
 
-or:
-Microsoft (R) WinHTTP Certificate Configuration Tool
-Copyright (C) Microsoft Corporation 2001.
+		Granting private key access for account:
+			NT AUTHORITY\NETWORK SERVICE
 
-Matching certificate:
-CN=MEVANS-Z620.healinx.inside
+	or:
+		Microsoft (R) WinHTTP Certificate Configuration Tool
+		Copyright (C) Microsoft Corporation 2001.
+
+		Matching certificate:
+		CN=MEVANS-Z620.healinx.inside
 
 
-Private key access has already been granted for account:
-    NT AUTHORITY\NETWORK SERVICE
+		Private key access has already been granted for account:
+			NT AUTHORITY\NETWORK SERVICE
+	
+	
+.EXAMPLE 
+
 #>
 
+param
+(
+	[Parameter(Mandatory=$true)] $EnvironmentConfig,
+	[Parameter(Mandatory=$true)] $MachineConfig
+)
+
+Write-host -ForegroundColor Green "`nStart of Certificate Permissions script`n"
+
+### START
+### Find the certificates and the winhttpcertcfg executable, per Tracy's registerAppCert.ps1 script
+### ....
+$emrsubject = "emr-prod.relayhealth.com"
+$hvaultsubject = "healthvault.relayhealth.com"
+$vortexsubject = "VortexrToolsClient"
+
+$account = [String]$MachineConfig.HVRelayServicesAccount
+# ...
+# END
+
+
 # Loop through the three certificates (EMR, HealthVault and VortexrToolsClientCert)
-foreach ($certName in "MEVANS-Z620.healinx.inside","MEVANS-Z620.na.corp.mckesson.com") {
-	Write-host -ForegroundColor Yellow "Processing certificate $certName"
+foreach ($certName in $emrsubject,$hvaultsubject,$vortexsubject) {
+	Write-host -ForegroundColor Yellow "- Processing certificate $certName"
 	
-	# Loop through the two accounts (Network Service and RelayServices)
-	foreach ($account in "Network Service","ek8t4xb") {
-		Write-host -ForegroundColor Yellow "Processing account $account on certificate $certName"
-		$result=invoke-expression "C:\GitHub\ServerBuildScripts\WIP\mevans\winhttpcertcfg.exe -g -a `"$account`"  -c LOCAL_MACHINE\My -s $certName"
+	# Loop through the two accounts (Network Service and the server-specific RelayServices accounts)
+	foreach ($account in "Network Service",$account) {
+		Write-host -ForegroundColor Yellow "-- Processing account $account on certificate $certName"
+		$result=invoke-expression "E:\healthvault\\winhttpcertcfg.exe -g -a `"$account`"  -c LOCAL_MACHINE\My -s $certName"
 
 		# Error handling
 		if ($LastExitCode -ne 0) {
@@ -49,3 +88,5 @@ foreach ($certName in "MEVANS-Z620.healinx.inside","MEVANS-Z620.na.corp.mckesson
 		$result
 	}
 }
+
+Write-host -ForegroundColor Green "`nEnd of Certificate Permissions script`n"
