@@ -225,8 +225,61 @@ sleep 10
 
 start-Service -Name "Initiate PassiveServer 8.7.0" -Confirm:$false
 
+# Check whether services started correctly
 
+
+# Check whether the service logs show successful start - MDE
+write-host -ForegroundColor Yellow "Checking Initiate MDE log file for service state"
+$LogPath="E:\mpi\project\initiate\log\"
+# Read the latest log file. Repeat 10 times waiting 30 seconds between each attempt.
+$latestLog = Get-ChildItem -Path $LogPath | Sort-Object LastAccessTime -Descending | Select-Object -First 1
+write-host -ForegroundColor Yellow "Latest Initiate MDE log file is $latestLog"
+
+$loopCount=1
+# Loop until we find the string, or we have tried for 5 minutes
+write-host -ForegroundColor Yellow "Attempt to read log file number $loopCount"
+$result = select-string -path "$LogPath$latestLog" -pattern "INFO  Java: com.initiatesystems.hub.socket.SocketServer: Starting socket listener \(16000\)..."
+while ((!($result)) -and ($loopCount -le 10)) {
+	sleep 30
+	$loopCount++
+	write-host -ForegroundColor Yellow "Attempt to read log file number $loopCount"
+	$result = select-string -path "$LogPath$latestLog" -pattern "INFO  Java: com.initiatesystems.hub.socket.SocketServer: Starting socket listener \(16000\)..."
+}
+
+if ($result) {
+	Write-host -ForegroundColor Yellow "Initiate MDE service started successfully"
+} else {
+	Write-host -ForegroundColor Red "Initiate MDE service failed to start"
+	exit
+}
+
+# Check whether the service logs show successful start - Passive Server
+write-host -ForegroundColor Yellow "Checking Initiate Passive Server log file for service state"
+$LogPath="E:\mpi\project\initiate\passive\logs\"
+# Read the latest log file. Repeat 10 times waiting 30 seconds between each attempt.
+$latestLog = "PassiveServer.log"
+write-host -ForegroundColor Yellow "Latest Initiate Passive Server log file is $latestLog"
+if (!(test-path -path "$LogPath$latestLog" )) {
+	Write-host -ForegroundColor Red "Cannot find Initiate Passive Server log file in location $LogPath$latestLog"
+	exit
+}
+
+$loopCount=1
+# Loop until we find the string, or we have tried for 5 minutes
+$result = select-string -path "$LogPath$latestLog" -pattern "Socket is Accepting Connections on port 16001"
+write-host -ForegroundColor Yellow "Attempt to read log file number $loopCount"
+while ((!($result)) -and ($loopCount -le 10)) {
+	sleep 30
+	$loopCount++
+	write-host -ForegroundColor Yellow "Attempt to read log file number $loopCount"
+	$result = select-string -path "$LogPath$latestLog" -pattern "Socket is Accepting Connections on port 16001"
+}
+if ($result) {
+	Write-host -ForegroundColor Yellow "Initiate Passive Server service started successfully"
+} else {
+	Write-host -ForegroundColor Red "Initiate Passive Server service failed to start"
+	exit
+}
 
 Write-host -ForegroundColor Green "`nEnd of ConfigureInitiate script`n"
 
-#Check logs for full completion!!!!
