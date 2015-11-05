@@ -25,31 +25,27 @@
 		Option 1 - run the AllBuildScripts.ps1 script (Number 99)
 		Option 2 - run individual scripts contained in the AllBuildScripts.ps1 script independently
 	
-	Script						Number
+	Script						Number	
 	=====================================
-	hostnamessingleip.ps1		(1)
-	dotnetcharge.ps1			(2)
+	hostnamessingleip.ps1		(1)		
+	dotnetcharge.ps1			(2)		
 	stats.ps1					(3)
 	permtest.ps1				(4)
-	metascan.ps1				(5)
-	audit.ps1					(6)
-	wintertree.ps1				(7)
-	hiddenshares.ps1			(8)
-	Msutil.ps1					(9)
-	SetFolderPermissions.ps1	(10)
-	Initiate.ps1				(11)
+	metascan.ps1				(5)		
+	audit.ps1					(6)		
+	wintertree.ps1				(7)		
+	hiddenshares.ps1			(8)		
+	Msutil.ps1					(9)		
+	SetFolderPermissions.ps1	(10)	
+	Initiate.ps1				(11)	
 	AppFabricSetup.ps1			(12)
-	registerAppCerts.ps1		(13)
+	registerAppCerts.ps1		(13)		
 	buildoutAllScripts.ps1 		(99)
 
-	$servers is a comma-delimited list of servers to deploy to. This overrides the "CodeDeployed" flag on
+	$script is a comma-delimited list of servers to deploy to. This overrides the "CodeDeployed" flag on
 	the buildoutSetup.config configuration for the server. Leave this blank to use the buildoutSetup.config 
 	configuration.
 	
-	$runLocal indicates that the scripts should be executed only on the server that this seript is bieng executed on.
-	
-	$noDatabase indicates that the services should not be started
-
 .EXAMPLE 
 	To run the complete set of buildout scripts:        
 	runBuildoutScripts.ps1 -EnvironmentPrefix Prod -noDatase -scriptNumber 99
@@ -65,12 +61,15 @@ param (
 	$servers=$null,
 	[switch]$noDatabase,
 	[switch]$runLocal
-)
+	)
 
-Write-host -ForegroundColor Green "`nStart of runBuildoutScripts`n"
+# Set file date for time stamping log file and starting the log file transcript
+$filedate =(Get-Date).ToString("yyyyMMddhhmmss")
+start-transcript "F:\SCM\Buildout\BuildoutLogs\runBuildoutScripts $filedate.log"
+write-host -foreground Green "`n# # # # # # # # # # # # # # # Entering runBuildoutScripts script. # # # # # # # # # # # # # # # `n"
 
 # Import-Module that contains custom functions
-Import-Module -Name .\BuildoutPackageExecuterFunctions.ps1
+Import-Module -Name .\BuildoutScriptsFunctions.ps1
 
 # Check if current console has admin rights
 $isAdmin = $null
@@ -109,7 +108,7 @@ if ($machines.count)
 	{
 	    $Hwebname=$machine.HwebName
 		write-host -ForegroundColor Yellow "Reading data for Web server $Hwebname"
-		
+			
 		# If one or more server number was passed into the script, only use those servers
 		if($serverlist)
 	    {
@@ -156,27 +155,29 @@ if ($machines.count)
 			write-host -ForegroundColor green "You are going to execute on $Hwebname"
 							
 			# Run the script indicated by the script number entered in the run command
+			# Currently all scripts are in "test" mode with "_test" appended to end of script name. 
+			# Remove "_test" after it is known that the script works correctly.
 			$ScriptList=@()
-			if ($scriptNumber -eq 1  -or $scriptNumber -eq 99) {$ScriptList+="hostnamessingleip.ps1"}
-			if ($scriptNumber -eq 2  -or $scriptNumber -eq 99) {$ScriptList+="dotnetcharge.ps1"}
-			if ($scriptNumber -eq 3  -or $scriptNumber -eq 99) {$ScriptList+="stats.ps1"}
-			if ($scriptNumber -eq 4  -or $scriptNumber -eq 99) {$ScriptList+="permtest.ps1"}
-			if ($scriptNumber -eq 5  -or $scriptNumber -eq 99) {$ScriptList+="metascan.ps1"}
-			if ($scriptNumber -eq 6  -or $scriptNumber -eq 99) {$ScriptList+="audit.ps1"}
-			if ($scriptNumber -eq 7  -or $scriptNumber -eq 99) {$ScriptList+="wintertree.ps1"}
-			if ($scriptNumber -eq 8  -or $scriptNumber -eq 99) {$ScriptList+="hiddenshares.ps1"}
-			if ($scriptNumber -eq 9  -or $scriptNumber -eq 99) {$ScriptList+="Msutil.ps1"}
-			if ($scriptNumber -eq 10 -or $scriptNumber -eq 99) {$ScriptList+="SetFolderPermissions.ps1"}
-			if ($scriptNumber -eq 11 -or $scriptNumber -eq 99) {$ScriptList+="Initiate.ps1"}
-			if ($scriptNumber -eq 12 -or $scriptNumber -eq 99) {$ScriptList+="AppFabricSetup.ps1"}
-			if ($scriptNumber -eq 13 -or $scriptNumber -eq 99) {$ScriptList+="registerAppCerts.ps1"}
-			if ($scriptNumber -eq 14 -or $scriptNumber -eq 99) {$ScriptList+="buildoutAllScripts.ps1"}
+			if ($scriptNumber -eq 1  -or $scriptNumber -eq 99) {$ScriptList+="hostnamessingleip_test.ps1"}
+			if ($scriptNumber -eq 2  -or $scriptNumber -eq 99) {$ScriptList+="dotnetcharge_test.ps1"}
+			if ($scriptNumber -eq 3  -or $scriptNumber -eq 99) {$ScriptList+="stats_test.ps1"}
+			if ($scriptNumber -eq 4  -or $scriptNumber -eq 99) {$ScriptList+="permtest_test.ps1"}
+			if ($scriptNumber -eq 5  -or $scriptNumber -eq 99) {$ScriptList+="metascan_test.ps1"}
+			if ($scriptNumber -eq 6  -or $scriptNumber -eq 99) {$ScriptList+="audit_test.ps1"}
+			if ($scriptNumber -eq 7  -or $scriptNumber -eq 99) {$ScriptList+="wintertree_test.ps1"}
+			if ($scriptNumber -eq 8  -or $scriptNumber -eq 99) {$ScriptList+="hiddenshares_test.ps1"}
+			if ($scriptNumber -eq 9  -or $scriptNumber -eq 99) {$ScriptList+="Msutil_test.ps1"}
+			if ($scriptNumber -eq 10 -or $scriptNumber -eq 99) {$ScriptList+="SetFolderPermissions_test.ps1"}
+			if ($scriptNumber -eq 11 -or $scriptNumber -eq 99) {$ScriptList+="Initiate_test.ps1"}
+			if ($scriptNumber -eq 12 -or $scriptNumber -eq 99) {$ScriptList+="AppFabricSetup_test.ps1"}
+			if ($scriptNumber -eq 13 -or $scriptNumber -eq 99) {$ScriptList+="registerAppCerts_test.ps1"}
+			if ($scriptNumber -eq 14 -or $scriptNumber -eq 99) {$ScriptList+="buildoutAllScripts_test.ps1"}
 
 			if (!($ScriptList)) {
 					Write-host -ForegroundColor Red "`nThe scriptNumber $scriptNumber entered does not match validation list, not running any scripts."
 					exit
 			}
-			
+	### latest change from Martin 11/3		
 			# Loop thorugh the selected scripts
 			foreach ($scriptName in $ScriptList) {
 				Write-host -ForegroundColor Green "`nExecuting script $scriptName"
@@ -218,3 +219,4 @@ if ($machines.count)
 	}	
 }
 Write-host -ForegroundColor Green "`nEnd of runBuildoutScripts"
+Stop-Transcript 
