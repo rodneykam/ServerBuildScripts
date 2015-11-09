@@ -62,11 +62,14 @@ param (
 	[switch]$noDatabase,
 	[switch]$runLocal
 	)
-	
-Write-host -ForegroundColor Green "`nStart of runBuildoutScripts`n"
 
-# Import custom functions
-Import-Module -Name .\BuildoutPackageExecuterFunctions.ps1
+# Set file date for time stamping log file and starting the log file transcript
+$filedate =(Get-Date).ToString("yyyyMMddhhmmss")
+start-transcript "F:\SCM\Buildout\BuildoutLogs\runBuildoutScripts $filedate.log"
+write-host -foreground Green "`n# # # # # # # # # # # # # # # Entering runBuildoutScripts script. # # # # # # # # # # # # # # # `n"
+
+# Import-Module that contains custom functions
+Import-Module -Name .\BuildoutScriptsFunctions.ps1
 
 # Check if current console has admin rights
 $isAdmin = $null
@@ -83,6 +86,12 @@ $currentuser= [Environment]::UserName
 $config= XMLParser -filepath $configFilePath -nodequalifier $EnvironmentPrefix
 $machines= $config.machines.machine
 
+Write-host -foreground yellow "Debug machine data:"
+#$machines
+
+Write-host -foreground yellow "Debug machine count:"
+#$machines.count
+
 # Were specific target servers requested?
 $Serverlist=@()
 
@@ -93,6 +102,8 @@ if($servers)
 		$Serverlist+=$server
 	}
 }
+
+#Write-host -foreground yellow "Debug foreach machine"
 
 # Make sure we have a server selected from buildoutSetup.config
 # Override that server selection if $server value(s) were passed into the script 
@@ -105,7 +116,7 @@ if ($machines.count)
 	{
 	    $Hwebname=$machine.HwebName
 		write-host -ForegroundColor Yellow "Reading data for Web server $Hwebname"
-		
+			
 		# If one or more server number was passed into the script, only use those servers
 		if($serverlist)
 	    {
@@ -146,7 +157,9 @@ if ($machines.count)
 				write-host -ForegroundColor Yellow "Web server $Hwebname will not be processed"
 			}
 	    }
-	
+
+#Write-host -foreground yellow "Debug 6"
+		
 	    if($ReadyForDeploy -eq $True)
 	    {	
 			write-host -ForegroundColor green "You are going to execute on $Hwebname"
@@ -155,26 +168,25 @@ if ($machines.count)
 			# Currently all scripts are in "test" mode with "_test" appended to end of script name. 
 			# Remove "_test" after it is known that the script works correctly.
 			$ScriptList=@()
-			if ($scriptNumber -eq 1  -or $scriptNumber -eq 99) {$ScriptList+="hostnamessingleip_test.ps1"}
-			if ($scriptNumber -eq 2  -or $scriptNumber -eq 99) {$ScriptList+="dotnetcharge_test.ps1"}
-			if ($scriptNumber -eq 3  -or $scriptNumber -eq 99) {$ScriptList+="stats_test.ps1"}
-			if ($scriptNumber -eq 4  -or $scriptNumber -eq 99) {$ScriptList+="permtest_test.ps1"}
-			if ($scriptNumber -eq 5  -or $scriptNumber -eq 99) {$ScriptList+="metascan_test.ps1"}
-			if ($scriptNumber -eq 6  -or $scriptNumber -eq 99) {$ScriptList+="audit_test.ps1"}
-			if ($scriptNumber -eq 7  -or $scriptNumber -eq 99) {$ScriptList+="wintertree_test.ps1"}
-			if ($scriptNumber -eq 8  -or $scriptNumber -eq 99) {$ScriptList+="hiddenshares_test.ps1"}
-			if ($scriptNumber -eq 9  -or $scriptNumber -eq 99) {$ScriptList+="Msutil_test.ps1"}
-			if ($scriptNumber -eq 10 -or $scriptNumber -eq 99) {$ScriptList+="SetFolderPermissions_test.ps1"}
-			if ($scriptNumber -eq 11 -or $scriptNumber -eq 99) {$ScriptList+="Initiate_test.ps1"}
-			if ($scriptNumber -eq 12 -or $scriptNumber -eq 99) {$ScriptList+="AppFabricSetup_test.ps1"}
+			#if ($scriptNumber -eq 1  -or $scriptNumber -eq 99) {$ScriptList+="hostnamessingleip_test.ps1"}
+			#if ($scriptNumber -eq 2  -or $scriptNumber -eq 99) {$ScriptList+="dotnetcharge_test.ps1"}
+			#if ($scriptNumber -eq 3  -or $scriptNumber -eq 99) {$ScriptList+="stats_test.ps1"}
+			if ($scriptNumber -eq 4  -or $scriptNumber -eq 99) {$ScriptList+="registerURL_test.ps1"}
+			#if ($scriptNumber -eq 5  -or $scriptNumber -eq 99) {$ScriptList+="metascan_test.ps1"}
+			#if ($scriptNumber -eq 6  -or $scriptNumber -eq 99) {$ScriptList+="audit_test.ps1"}
+			#if ($scriptNumber -eq 7  -or $scriptNumber -eq 99) {$ScriptList+="wintertree_test.ps1"}
+			#if ($scriptNumber -eq 8  -or $scriptNumber -eq 99) {$ScriptList+="hiddenshares_test.ps1"}
+			#if ($scriptNumber -eq 9  -or $scriptNumber -eq 99) {$ScriptList+="Msutil_test.ps1"}
+			#if ($scriptNumber -eq 10 -or $scriptNumber -eq 99) {$ScriptList+="SetFolderPermissions_test.ps1"}
+			#if ($scriptNumber -eq 11 -or $scriptNumber -eq 99) {$ScriptList+="Initiate_test.ps1"}
+			#if ($scriptNumber -eq 12 -or $scriptNumber -eq 99) {$ScriptList+="AppFabricSetup_test.ps1"}
 			if ($scriptNumber -eq 13 -or $scriptNumber -eq 99) {$ScriptList+="registerAppCerts_test.ps1"}
-			if ($scriptNumber -eq 14 -or $scriptNumber -eq 99) {$ScriptList+="buildoutAllScripts_test.ps1"}
-
+			
 			if (!($ScriptList)) {
 					Write-host -ForegroundColor Red "`nThe scriptNumber $scriptNumber entered does not match validation list, not running any scripts."
 					exit
 			}
-			
+	### latest change from Martin 11/3		
 			# Loop thorugh the selected scripts
 			foreach ($scriptName in $ScriptList) {
 				Write-host -ForegroundColor Green "`nExecuting script $scriptName"
@@ -182,31 +194,32 @@ if ($machines.count)
 				# Either run in current directory on current server, or run on remote server
 				if ($runLocal) {
 					Write-host -ForegroundColor Green "Executing on local server $destinationWinRMServer"
+					# Get latest version of scripts
+					# ...
+					
 					try
 					{
-						Invoke-Expression -command "$scriptName -EnvironmentConfig $config -MachineConfig $machine"
+						Invoke-Expression -command ".\$scriptName -EnvironmentConfig $config -MachineConfig $machine"
 						write-host "Command execution successful"
 					}
 					finally {}
 				}
 				else {
-					$destinationWinRMServer = [string]::Format("{0}", $machine.HwebName)
+					$destinationServer = [string]::Format("{0}", $machine.HwebName)
 						
 					$currentexecuter= $machine.domain +"\"+"$currentuser"
 					$password=SetPassword -user $currentexecuter 
-					$Destination = "\\"+$machine.MachineIp+"\"+$machine.PackageDestination
-
+					# Optionaly, push latest version of scripts
+					# ...
+					
 					Write-host -ForegroundColor Green "Executing on remote server $destinationWinRMServer"
-					$scriptBlock = { 
-						param($p1,$p2) pushd C:\Hwebsource\scripts
-						C:\Hwebsource\scripts\$scriptName $p1 $p2
-						$argsList = $config,$machine
+					$argsList = $config,$machine
+					executeScriptFileInRemoteSession -filePath $scriptName -argsList $argsList -deployLoginame $currentexecuter -deployUserPassword $password -serverFQDN $destinationServer
 				}
-					executeScriptInRemoteSession -scriptBlock $scriptBlock -argsList $argsList -deployLoginame $currentexecuter -deployUserPassword $password -serverFQDN $destinationWinRMServer
-				}
-				Write-host -ForegroundColor Green "Script execution complete for $scriptName"
+				Write-host -ForegroundColor Green "Script execution complete for $scriptName `n"
 			}
 		}
 	}	
 }
 Write-host -ForegroundColor Green "`nEnd of runBuildoutScripts"
+Stop-Transcript 
