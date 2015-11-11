@@ -191,7 +191,7 @@ function Write-Log
 
         # If attempting to write to a log file in a folder/path that doesn't exist
         # to create the file include path.
-        else (!(Test-Path $Path)) 
+        if (!(Test-Path $Path)) 
             {
             Write-Verbose "Creating $Path."
             $NewLogFile = New-Item $Path -Force -ItemType File
