@@ -18,122 +18,87 @@ param
 (
 [Parameter(Mandatory=$true)] $EnvironmentConfig,
 [Parameter(Mandatory=$true)] $MachineConfig
+[Parameter(Mandatory=$true)] $BuildOutLog
 )
 
-# Create the Logfile function.
-Function LogWrite  {
-Param ([string]$logstring)
-Add-content $Logfile -value $logstring
-}
- 
-# Added these variables to name the new log file.
-# Date and time stamp
-# Path and file name of the new log file
-# Creates a new log file
-# sets the Logfile variable to the path and script name.
-# LogWrite with no subject creates a blank line
-
-$Date = get-date -f "MM-dd-yyyy hh-mm-ss"
-$Path = "F:\SCM\Buildout\BuildoutLogs\Permtest_$($env:computername)_" + $Date + ".log"
-$NewLogFile = New-Item $Path -Force -ItemType File
-$Logfile = $Path 
-$ScriptName = $MyInvocation.MyCommand.Name
-Write-Host -Foregroundcolor Yellow $ScriptName
-LogWrite "$ScriptName `t$Date `n "
-LogWrite
+Write-Log "$ScriptName `t$Date `n " $BuildOutLog Info
 
 # Here we delete the URL acl's
 # We capture the output in the $Output variable and write that to the logfile we created above.
 
 $Output = netsh http Delete urlacl url=http://+:8888/patient/DrugBenefitRxHistoryService
-LogWrite "Delete urlacl url=http://+:8888/patient/DrugBenefitRxHistoryService"
-LogWrite $Output
-LogWrite
+Write-Log "Delete urlacl url=http://+:8888/patient/DrugBenefitRxHistoryService" $BuildOutLog Info
+Write-Log $Output $BuildOutLog Info
+
 
 $Output = netsh http Delete urlacl url=http://+:8080/EScriptIntegration
-LogWrite "Delete urlacl url=http://+:8080/EScriptIntegration"
-LogWrite $Output
-LogWrite
+Write-Log "Delete urlacl url=http://+:8080/EScriptIntegration" $BuildOutLog Info
+Write-Log $Output $BuildOutLog Info
 
 $Output = netsh http Delete urlacl url=http://+:4762/PayorEligibilityService
-LogWrite "Delete urlacl url=http://+:4762/PayorEligibilityService"
-LogWrite $Output
-LogWrite
+Write-Log "Delete urlacl url=http://+:4762/PayorEligibilityService" $BuildOutLog Info
+Write-Log $Output $BuildOutLog Info
 
 $Output = netsh http Delete urlacl url=http://+:2201/relayhealth/service/surescripts/prescriber
-LogWrite "Delete urlacl url=http://+:2201/relayhealth/service/surescripts/prescriber"
-LogWrite $Output
-LogWrite
+Write-Log "Delete urlacl url=http://+:2201/relayhealth/service/surescripts/prescriber" $BuildOutLog Info
+Write-Log $Output $BuildOutLog Info
 
 $Output = netsh http Delete urlacl url=http://+:2201/relayhealth/service/rxhub/prescriber
-LogWrite "Delete urlacl url=http://+:2201/relayhealth/service/rxhub/prescriber"
-LogWrite $Output
-LogWrite
+Write-Log "Delete urlacl url=http://+:2201/relayhealth/service/rxhub/prescriber" $BuildOutLog Info
+Write-Log $Output$BuildOutLog Info
 
 $Output = netsh http Delete urlacl url=http://localhost:8888/patient/DrugBenefitRxHistoryService
-LogWrite "Delete urlacl url=http://localhost:8888/patient/DrugBenefitRxHistoryService"
-LogWrite $Output
-LogWrite
+Write-Log "Delete urlacl url=http://localhost:8888/patient/DrugBenefitRxHistoryService" $BuildOutLog Info
+Write-Log $Output $BuildOutLog Info
 
 $Output = netsh http Delete urlacl url=http://localhost:4762/PayorEligibilityService
-LogWrite "Delete urlacl url=http://localhost:4762/PayorEligibilityService"
-LogWrite $Output
-LogWrite
+Write-Log "Delete urlacl url=http://localhost:4762/PayorEligibilityService" $BuildOutLog Info
+Write-Log $Output $BuildOutLog Info
 
 $Output = netsh http Delete urlacl url=http://+:4240/relayhealth/simulator/faxServer
-LogWrite "http Delete urlacl url=http://+:4240/relayhealth/simulator/faxServer"
-LogWrite $Output
-LogWrite
+Write-Log "http Delete urlacl url=http://+:4240/relayhealth/simulator/faxServer" $BuildOutLog Info
+Write-Log $Output $BuildOutLog Info
 
 # Here we get the service account from the machine config 
 
 $perm = $MachineConfig.RelayServicesAccount
-LogWrite "the service account from the machine config"
-LogWrite "MachineConfig.RelayServicesAccount is $perm"
-LogWrite
+Write-Log "the service account from the machine config" $BuildOutLog Info
+Write-Log "MachineConfig.RelayServicesAccount is $perm" $BuildOutLog Info
 
 # Here we add the url's with the correct user 
 
 $Output = netsh http add urlacl url=http://+:8888/patient/DrugBenefitRxHistoryService/ user=$perm
-LogWrite "add urlacl url=http://+:8888/patient/DrugBenefitRxHistoryService/ user=$perm"
-LogWrite $Output
-LogWrite
+Write-Log "add urlacl url=http://+:8888/patient/DrugBenefitRxHistoryService/ user=$perm" $BuildOutLog Info
+Write-Log $Output $BuildOutLog Info
 
 $Output = netsh http add urlacl url=http://+:8080/EScriptIntegration/ user= $perm
-LogWrite "add urlacl url=http://+:8080/EScriptIntegration/ user= $perm"
-LogWrite $Output
-LogWrite
+Write-Log "add urlacl url=http://+:8080/EScriptIntegration/ user= $perm" $BuildOutLog Info
+Write-Log $Output $BuildOutLog Info
 
 $Output = netsh http add urlacl url=http://+:4762/PayorEligibilityService/ user= $perm
-LogWrite "add urlacl url=http://+:4762/PayorEligibilityService/ user= $perm"
-LogWrite $Output
-LogWrite
+Write-Log "add urlacl url=http://+:4762/PayorEligibilityService/ user= $perm" $BuildOutLog Info
+Write-Log $Output $BuildOutLog Info
 
 $Output = netsh http add urlacl url=http://+:2201/relayhealth/service/surescripts/prescriber/ user= $perm
-LogWrite "add urlacl url=http://+:2201/relayhealth/service/surescripts/prescriber/ user= $perm"
-LogWrite $Output
-LogWrite
+Write-Log "add urlacl url=http://+:2201/relayhealth/service/surescripts/prescriber/ user= $perm" $BuildOutLog Info
+Write-Log $Output $BuildOutLog Info
 
 $Output = netsh http add urlacl url=http://+:2201/relayhealth/service/rxhub/prescriber/ user= $perm
-LogWrite "add urlacl url=http://+:2201/relayhealth/service/rxhub/prescriber/ user= $perm"
-LogWrite $Output
-LogWrite
+Write-Log "add urlacl url=http://+:2201/relayhealth/service/rxhub/prescriber/ user= $perm" $BuildOutLog Info
+Write-Log $Output $BuildOutLog Info
 
 $Output = netsh http add urlacl url=http://localhost:8888/patient/DrugBenefitRxHistoryService/ user= $perm
-LogWrite "add urlacl url=http://localhost:8888/patient/DrugBenefitRxHistoryService/ user= $perm"
-LogWrite $Output
-LogWrite
+Write-Log "add urlacl url=http://localhost:8888/patient/DrugBenefitRxHistoryService/ user= $perm" $BuildOutLog Info
+Write-Log $Output $BuildOutLog Info
 
-$Output = netsh http add urlacl url=http://localhost:4762/PayorEligibilityService/ user=$perm
-LogWrite "add urlacl url=http://localhost:4762/PayorEligibilityService/ user=$perm"
-LogWrite $Output
-LogWrite
+$Output = netsh http add urlacl url=http://localhost:4762/PayorEligibilityService/ user=$perm 
+Write-Log "add urlacl url=http://localhost:4762/PayorEligibilityService/ user=$perm" $BuildOutLog Info
+Write-Log $Output $BuildOutLog Info
 
 $Output = netsh http add urlacl url=http://+:4240/relayhealth/simulator/faxServer/ user= $perm
-LogWrite "add urlacl url=http://+:4240/relayhealth/simulator/faxServer/ user= $perm"
-LogWrite $Output
-LogWrite
+Write-Log "add urlacl url=http://+:4240/relayhealth/simulator/faxServer/ user= $perm" $BuildOutLog Info
+Write-Log $Output $BuildOutLog Info
 
 $Date = get-date -f "MM-dd-yyyy hh-mm-ss"
 
-LogWrite "End of $ScriptName `t$Date `n "
+Write-Log "End of $ScriptName `t$Date `n " $BuildOutLog Info
