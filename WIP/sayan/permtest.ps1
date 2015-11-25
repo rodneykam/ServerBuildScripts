@@ -1,8 +1,47 @@
+#############################################################################
+##
+## permtest
+##
+## 11/2015, RelayHealth
+## Martin Evans
+##
+##############################################################################
+
+
+<#
+.SYNOPSIS
+	This script gives the RelayServiceAccount permission to the URLs defined in IIS
+	
+.DESCRIPTION
+
+	The script calls netsh 
+	
+	
+.EXAMPLE 
+
+#>
+
 param
 (
 [Parameter(Mandatory=$true)] $EnvironmentConfig,
 [Parameter(Mandatory=$true)] $MachineConfig
 )
+
+function handleerror
+{
+    param ($ParsedLEC, $where)
+
+    if ($ParsedLEC -ne 0){
+	    Write-Error "Script failed at $where"
+        exit
+	    }
+    ELSE{	
+	    Write-Host -foregroundcolor Green "Successfully processed $where"
+   	    }
+}
+
+
+Write-Host "Starting permtest.ps1"
 
 $perm = $MachineConfig.RelayServicesAccount
 $urls = @(
@@ -16,9 +55,15 @@ $urls = @(
 "http://+:4240/relayhealth/simulator/faxServer/"
 )
 
+# Call netsh command to first delete and then allow the RelayServiceAccount to access the URLs listed above.
 foreach ($url in $urls) {
+
 	netsh http Delete urlacl url=$url
+	handleerror $LastExitCode "Delete Url"
+
 	netsh http add urlacl url="$url" user=$perm
+	handleerror $LastExitCode "Add Url"
 }
 
+Write-Host "End permtest.ps1"
 
