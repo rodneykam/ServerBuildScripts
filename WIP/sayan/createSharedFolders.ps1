@@ -3,10 +3,12 @@
 # Does not modify NTFS permissions.
 # Jan, 2012 N.Johnson
 #####################################################################################
+
 param
 (
-	[Parameter(Mandatory=$true)] $ShareName,
-	[Parameter(Mandatory=$true)] $FolderPath
+	# Configuration XML parameters are not used by this script
+	$EnvironmentConfig=$null,
+	$MachineConfig=$null
 )
 
 #####################################################################################
@@ -139,15 +141,24 @@ Function New-Share (
 #####################################################################################
 Write-host -ForegroundColor Green "`nStart of Hidden Share script`n"
 
-try {
-  $server = $env:computername
-  #Create Share Permission
-  $ACE = @(New-ACE -Name "Everyone" -Domain "NT AUTHORITY" -Permission "Full" -Group)
-  #Create the share
-  $result = New-Share -FolderPath $FolderPath -ShareName $ShareName -ACEs $ACE -Description $ShareName -Computer $env:computername 
-  #Output result message from new-share
-  Write-Output $result.Message
- }
- catch {}
- 
- Write-host -ForegroundColor Green "`nEnd of Hidden Share script`n"
+$shares = @(
+("InteropShuntedEmails$", "E:\RelayHealth\InteropShuntedEmails"),
+("ShuntedFaxes$", "E:\RelayHealth\ShuntedFaxes"),
+("ShuntedEmails$", "E:\RelayHealth\ShuntedEmails"),
+("Logs$", "E:\RelayHealth\Logs")
+)
+
+$server = $env:computername
+#Create Share Permission
+$ACE = @(New-ACE -Name "Everyone" -Domain "NT AUTHORITY" -Permission "Full" -Group)
+foreach ($share in $shares) {
+    $ShareName = $share[0]
+    $FolderPath = $share[1]
+    
+    #Create the share
+    $result = New-Share -FolderPath $FolderPath -ShareName $ShareName -ACEs $ACE -Description $ShareName -Computer $env:computername 
+    #Output result message from new-share
+    Write-Output $result.Message
+}
+
+Write-host -ForegroundColor Green "`nEnd of Hidden Share script`n"

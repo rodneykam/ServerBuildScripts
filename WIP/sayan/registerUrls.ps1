@@ -10,11 +10,11 @@
 
 <#
 .SYNOPSIS
-	This script gives the RelayServiceAccount permission to the URLs defined in IIS
+	This script gives the RelayServicesAccount permission to the URLs defined in IIS
 	
 .DESCRIPTION
 
-	The script calls netsh 
+	The script calls netsh to give the required permissions to the RelayServicesAccount
 	
 	
 .EXAMPLE 
@@ -27,21 +27,9 @@ param
 [Parameter(Mandatory=$true)] $MachineConfig
 )
 
-function handleerror
-{
-    param ($ParsedLEC, $where)
-
-    if ($ParsedLEC -ne 0){
-	    Write-Error "Script failed at $where"
-        exit
-	    }
-    ELSE{	
-	    Write-Host -foregroundcolor Green "Successfully processed $where"
-   	    }
-}
 
 
-Write-Host "Starting permtest.ps1"
+Write-Host "Starting RegisterUrls.ps1"
 
 $perm = $MachineConfig.RelayServicesAccount
 $urls = @(
@@ -59,11 +47,11 @@ $urls = @(
 foreach ($url in $urls) {
 
 	netsh http Delete urlacl url=$url
-	handleerror $LastExitCode "Delete Url"
+	Handle-Error $LastExitCode "RegisterUrls.ps1 - Delete Url - $url"
 
 	netsh http add urlacl url="$url" user=$perm
-	handleerror $LastExitCode "Add Url"
+	Handle-Error $LastExitCode "RegisterUrls.ps1 - Add Url  - $url"
 }
 
-Write-Host "End permtest.ps1"
+Write-Host "End RegisterUrls.ps1"
 

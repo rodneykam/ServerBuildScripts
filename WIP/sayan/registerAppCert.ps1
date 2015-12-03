@@ -1,4 +1,4 @@
-#
+<#
 .SYNOPSIS
 	This script applies permissions to certificates to grant certain accounts to utilize those certificates.
 
@@ -60,14 +60,14 @@ if (-Not (test-path $wincertdir))
 {
 	Write-Host -ForegroundColor Red "   The E:\RegisterAppCert folder does not exist."
 	Write-Host -ForegroundColor Red "   Terminating registerAppCert script. `n"
-	Break
+	exit
 }
 elseif (-Not (test-path $certConfig)) 
 {
 	Write-Host -ForegroundColor Yellow "   The E:\RegisterAppCert folder exists, testing for winhttpcertcfg.exe"
 	Write-Host -ForegroundColor Red "   The file winhttpcertcfg.exe does not exist"
 	Write-Host -ForegroundColor Red "   Terminating registerAppCert script. `n"
-    Break
+    exit
 }
 else
 {
@@ -80,7 +80,7 @@ $account = [String]$MachineConfig.HVRelayServicesAccount
 # Loop through the three certificates (EMR, HealthVault and VortexrToolsClientCert)
 foreach ($certName in $emrsubject,$hvaultsubject,$vortexsubject) {
 	Write-host -ForegroundColor Yellow "- Processing certificate $certName"
-	$certificate = gci cert:\LocalMachine\MY | where-object {$_.Subject -match "$certName"}
+	$certificate = Get-ChildItem cert:\LocalMachine\MY | where-object {$_.Subject -match "$certName"}
 
 	# Check for the existance of the certificate in the cert directory
 	if([string]::IsNullOrEmpty($certificate))

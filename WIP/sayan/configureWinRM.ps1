@@ -30,14 +30,18 @@ Write-host -ForegroundColor Green "`nStart of ConfigureWinRM script`n"
 # Checking whether WinRM listeners are configured
 $listeners= winrm enumerate winrm/config/listener
 
+
 # Remove listeners if -Remove flag was set
 if ($remove) {
 	if ($listeners) {
 		write-Host -ForegroundColor Green "The following Listeners will be deleted from $computername `n "
 		$listeners
 		winrm delete winrm/config/listener?Address=IP:$ip+Transport=HTTPS
+        Handle-Error $LastExitCode "configureWinRM - Delete Listener"
+
 		write-Host -ForegroundColor yellow "`n All HTTPS Listeners have been deleted `n"
 		winrm enumerate winrm/config/listener
+
 	} else {
 		write-Host -ForegroundColor Green "There are no Listeners to delete from $computername `n "
 	}
@@ -92,8 +96,10 @@ else
 
 Write-host -ForegroundColor Green "`n The following  listener is created on  this  $computername"
 winrm create winrm/config/listener?Address=IP:$ip+Transport=HTTPS
+Handle-Error $LastExitCode "configureWinRM - Create Listener"
 
 winrm set winrm/config/client '@{TrustedHosts="10.12.42.32"}'
+Handle-Error $LastExitCode "configureWinRM - Set Client"
 
 Write-host -ForegroundColor Green "`n Here are all the listeners on  this  $computername"
 winrm enumerate winrm/config/listener
