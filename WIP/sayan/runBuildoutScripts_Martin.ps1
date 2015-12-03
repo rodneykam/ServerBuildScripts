@@ -71,6 +71,11 @@ Write-host -ForegroundColor Green "`nStart of runBuildoutScripts`n"
 Import-Module -Name .\BuildoutPackageExecuterFunctions.ps1
 Import-Module -Name .\PowerShellLogging\PowerShellLogging.psm1
 
+$filedate =(Get-Date).ToString("yyyyMMddhhmmss")
+$LogFileName = "$($env:computername)_" + $filedate + ".log"
+
+$LogFile = Enable-LogFile -Path $LogFileName
+
 # Check if current console has admin rights
 $isAdmin = $null
 GetAdmin([ref]$isAdmin)
