@@ -1,1 +1,0 @@
-SetupMN.exe -r SetupMN.properties -i silent
