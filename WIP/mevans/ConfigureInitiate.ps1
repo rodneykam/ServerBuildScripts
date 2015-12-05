@@ -174,7 +174,7 @@ for ($i = 0 ; $i -le $envpattern.length - 1 ;$i++)
 	Set-Content $initiate_envsetfile
 }
 
-# Now write the environment-specific settings intro the Passive Server configuration file
+# Now write the environment-specific settings into the Passive Server configuration file
 $initiate_passsivepropertiesfile = "E:\mpi\Project\Initiate\passive\conf\PassiveServer.properties"
 if (-not(Test-Path -path $initiate_passsivepropertiesfile))
 { 
@@ -182,7 +182,7 @@ if (-not(Test-Path -path $initiate_passsivepropertiesfile))
 	exit
 }
 
-# Read the credentials for the  Passive Server service to connect to the Initiate MDE service from the  Environment.DTD file
+# Read the credentials for the Passive Server service to connect to the Initiate MDE service from the  Environment.DTD file
 pushd e:\relayhealth\deployhelp
 $dtd = .\ParseDTD.ps1
 $PassivePassword=$dtd.NIMPassword
