@@ -168,7 +168,7 @@ if ($machines.count)
 			if ($scriptNumber -eq 1  -or $scriptNumber -eq 99) {$ScriptList+="hostnamessingleip.ps1"}
 			if ($scriptNumber -eq 2  -or $scriptNumber -eq 99) {$ScriptList+="dotnetcharge.ps1"}
 			if ($scriptNumber -eq 3  -or $scriptNumber -eq 99) {$ScriptList+="stats.ps1"}
-			if ($scriptNumber -eq 4  -or $scriptNumber -eq 99) {$ScriptList+="permtest.ps1"}
+			if ($scriptNumber -eq 4  -or $scriptNumber -eq 99) {$ScriptList+="registerUrls.ps1"}
 			if ($scriptNumber -eq 5  -or $scriptNumber -eq 99) {$ScriptList+="metascan.ps1"}
 			if ($scriptNumber -eq 6  -or $scriptNumber -eq 99) {$ScriptList+="audit.ps1"}
 			if ($scriptNumber -eq 7  -or $scriptNumber -eq 99) {$ScriptList+="wintertree.ps1"}
@@ -177,7 +177,7 @@ if ($machines.count)
 			if ($scriptNumber -eq 10 -or $scriptNumber -eq 99) {$ScriptList+="SetFolderPermissions.ps1"}
 			if ($scriptNumber -eq 11 -or $scriptNumber -eq 99) {$ScriptList+="Initiate.ps1"}
 			if ($scriptNumber -eq 12 -or $scriptNumber -eq 99) {$ScriptList+="AppFabricSetup.ps1"}
-			if ($scriptNumber -eq 13 -or $scriptNumber -eq 99) {$ScriptList+="registerAppCerts.ps1"}
+			if ($scriptNumber -eq 13 -or $scriptNumber -eq 99) {$ScriptList+="registerAppCert.ps1"}
 			if ($scriptNumber -eq 14 -or $scriptNumber -eq 99) {$ScriptList+="buildoutAllScripts.ps1"}
 				
 			
