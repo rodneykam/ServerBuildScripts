@@ -39,7 +39,7 @@ param
 	[Parameter(Mandatory=$true)] $MachineConfig
 )
 
-Write-host -ForegroundColor Green "`nStart of Certificate Permissions script`n"
+Write-host -ForegroundColor Green "`nStart Script - registerAppCert`n"
 
 # Find the certificates and the winhttpcertcfg executable
 $emrsubject = "emr-prod.relayhealth.com"
@@ -118,4 +118,4 @@ foreach ($certName in $emrsubject,$hvaultsubject,$vortexsubject) {
 	}
 }
 
-Write-host -ForegroundColor Green "`nEnd of Certificate Permissions script`n"
+Write-host -ForegroundColor Green "`nStart Script - registerAppCert`n"

@@ -14,8 +14,16 @@
 	
 .DESCRIPTION
 
-	The script calls netsh to give the required permissions to the RelayServicesAccount
-	
+	The script calls netsh to give the required permissions to the RelayServicesAccount on the following URLs
+    
+	"http://+:8888/patient/DrugBenefitRxHistoryService/"
+    "http://+:8080/EScriptIntegration/"
+    "http://+:4762/PayorEligibilityService/"
+    "http://+:2201/relayhealth/service/surescripts/prescriber/"
+    "http://+:2201/relayhealth/service/rxhub/prescriber/"
+    "http://localhost:8888/patient/DrugBenefitRxHistoryService/"
+    "http://localhost:4762/PayorEligibilityService/"
+    "http://+:4240/relayhealth/simulator/faxServer/"
 	
 .EXAMPLE 
 
@@ -29,7 +37,7 @@ param
 
 
 
-Write-Host "Starting RegisterUrls.ps1"
+Write-Host -ForegroundColor Green "Start Script - registerUrls"
 
 $perm = $MachineConfig.RelayServicesAccount
 $urls = @(
@@ -53,5 +61,5 @@ foreach ($url in $urls) {
 	Handle-Error $LastExitCode "RegisterUrls.ps1 - Add Url  - $url"
 }
 
-Write-Host "End RegisterUrls.ps1"
+Write-Host -ForegroundColor Green "Start Script - registerUrls"
 

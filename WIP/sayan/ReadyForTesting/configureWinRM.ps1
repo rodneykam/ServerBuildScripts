@@ -12,6 +12,7 @@
 	This script configures Windows Remoting WinRM listener to use HTTPS on a web server
 
 .DESCRIPTION
+    The script will enable (default action) or disable WinRM.
 	
 .EXAMPLE 
 
@@ -25,7 +26,7 @@ param
 	[switch] $remove
 )
 
-Write-host -ForegroundColor Green "`nStart of ConfigureWinRM script`n"
+Write-host -ForegroundColor Green "`nStart Script - configureWinRM`n"
 
 # Checking whether WinRM listeners are configured
 $listeners= winrm enumerate winrm/config/listener
@@ -104,4 +105,4 @@ Handle-Error $LastExitCode "configureWinRM - Set Client"
 Write-host -ForegroundColor Green "`n Here are all the listeners on  this  $computername"
 winrm enumerate winrm/config/listener
 
-Write-host -ForegroundColor Green "`nEnd of ConfigureWinRM script`n"
+Write-host -ForegroundColor Green "`nEnd Script - configureWinRM`n"

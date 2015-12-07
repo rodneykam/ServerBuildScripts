@@ -4,6 +4,24 @@
 # Jan, 2012 N.Johnson
 #####################################################################################
 
+<#
+.SYNOPSIS
+	This script creates the required shared folders on the server
+	
+.DESCRIPTION
+
+    The following hidden shares are created by this script
+    Name                  Path
+	InteropShuntedEmails$ E:\RelayHealth\InteropShuntedEmails
+    ShuntedFaxes$         E:\RelayHealth\ShuntedFaxes"),
+    ShuntedEmails$        E:\RelayHealth\ShuntedEmails"),
+    Logs$                 E:\RelayHealth\Logs")
+	
+	
+.EXAMPLE 
+
+#>
+
 param
 (
 	# Configuration XML parameters are not used by this script
@@ -139,7 +157,7 @@ Function New-Share (
 #####################################################################################
 # Main
 #####################################################################################
-Write-host -ForegroundColor Green "`nStart of Hidden Share script`n"
+Write-host -ForegroundColor Green "`nStart Script - createSharedFolders`n"
 
 $shares = @(
 ("InteropShuntedEmails$", "E:\RelayHealth\InteropShuntedEmails"),
@@ -161,4 +179,4 @@ foreach ($share in $shares) {
     Write-Output $result.Message
 }
 
-Write-host -ForegroundColor Green "`nEnd of Hidden Share script`n"
+Write-host -ForegroundColor Green "`nStart Script - createSharedFolders`n"
