@@ -1,0 +1,1 @@
+WindowsServerAppFabricSetup_x64_6.1.exe /i cacheclient
