@@ -149,13 +149,13 @@ function executeScriptFileInRemoteSession( $filePath, $argsList, $deployLoginame
 
 function Handle-Error
 {
-    param ($ParsedLEC, $where)
+    param ($ParsedLEC, $message)
 
     if ($ParsedLEC -ne 0){
-	    Write-Error "Script failed at $where"
+	    Write-Error "$message"
         exit
-	    }
+	}
     ELSE{	
-	    Write-Host -foregroundcolor Green "Successfully processed $where"
-   	    }
+	    Write-Host "$message"
+   	}
 }

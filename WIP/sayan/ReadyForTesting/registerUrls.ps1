@@ -35,9 +35,9 @@ param
 [Parameter(Mandatory=$true)] $MachineConfig
 )
 
+$scriptName = "registerUrls"
 
-
-Write-Host -ForegroundColor Green "START Script - registerUrls"
+Write-Host -ForegroundColor Green "`nSTART SCRIPT - $scriptName running on $env:computername`n"
 
 $perm = $MachineConfig.RelayServicesAccount
 $urls = @(
@@ -54,12 +54,12 @@ $urls = @(
 # Call netsh command to first delete and then allow the RelayServiceAccount to access the URLs listed above.
 foreach ($url in $urls) {
 
-	netsh http Delete urlacl url=$url
-	Handle-Error $LastExitCode "RegisterUrls.ps1 - Delete Url - $url"
+	$result = netsh http Delete urlacl url=$url
+	Handle-Error $LastExitCode "$url - $result"
 
-	netsh http add urlacl url="$url" user=$perm
-	Handle-Error $LastExitCode "RegisterUrls.ps1 - Add Url  - $url"
+	$result = netsh http add urlacl url="$url" user=$perm
+	Handle-Error $LastExitCode "$url - $result"
 }
 
-Write-Host -ForegroundColor Green "END Script - registerUrls"
+Write-Host -ForegroundColor Green "`nEND SCRIPT - $scriptName running on $env:computername`n"
 

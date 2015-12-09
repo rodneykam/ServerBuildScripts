@@ -157,7 +157,8 @@ Function New-Share (
 #####################################################################################
 # Main
 #####################################################################################
-Write-host -ForegroundColor Green "`nStart Script - createSharedFolders`n"
+$scriptName = "createSharedFolders.ps1"
+Write-Host -ForegroundColor Green "`nSTART SCRIPT - $scriptName running on $env:computername`n"
 
 $shares = @(
 ("InteropShuntedEmails$", "E:\RelayHealth\InteropShuntedEmails"),
@@ -179,4 +180,4 @@ foreach ($share in $shares) {
     Write-Output $result.Message
 }
 
-Write-host -ForegroundColor Green "`nStart Script - createSharedFolders`n"
+Write-Host -ForegroundColor Green "`nEND SCRIPT - $scriptName running on $env:computername`n"

@@ -68,13 +68,17 @@ $ErrorActionPreference = "Stop"
 Write-host -ForegroundColor Green "`nStart of runBuildoutScripts`n"
 
 # Import-Module that contains custom functions
-Import-Module -Name .\BuildoutPackageExecuterFunctions.ps1
+#Import-Module -Name .\BuildoutPackageExecuterFunctions.ps1 -removing because we are using new name and new functions
+
+Import-Module -Name .\BuildoutScriptsFunctions.ps1
 Import-Module -Name .\PowerShellLogging\PowerShellLogging.psm1
 
 $filedate =(Get-Date).ToString("yyyyMMddhhmmss")
 $LogFileName = "$($env:computername)_" + $filedate + ".log"
 
 $LogFile = Enable-LogFile -Path $LogFileName
+
+Write-host -ForegroundColor Green "`n# # # # # # # # # # Start of runBuildoutScripts # # # # # # # # # # `n"
 
 # Check if current console has admin rights
 $isAdmin = $null
@@ -164,55 +168,62 @@ if ($machines.count)
 			if ($scriptNumber -eq 1  -or $scriptNumber -eq 99) {$ScriptList+="hostnamessingleip.ps1"}
 			if ($scriptNumber -eq 2  -or $scriptNumber -eq 99) {$ScriptList+="dotnetcharge.ps1"}
 			if ($scriptNumber -eq 3  -or $scriptNumber -eq 99) {$ScriptList+="stats.ps1"}
-			if ($scriptNumber -eq 4  -or $scriptNumber -eq 99) {$ScriptList+="permtest.ps1"}
+			if ($scriptNumber -eq 4  -or $scriptNumber -eq 99) {$ScriptList+="registerUrls.ps1"}
 			if ($scriptNumber -eq 5  -or $scriptNumber -eq 99) {$ScriptList+="metascan.ps1"}
 			if ($scriptNumber -eq 6  -or $scriptNumber -eq 99) {$ScriptList+="audit.ps1"}
 			if ($scriptNumber -eq 7  -or $scriptNumber -eq 99) {$ScriptList+="wintertree.ps1"}
-			if ($scriptNumber -eq 8  -or $scriptNumber -eq 99) {$ScriptList+="hiddenshares.ps1"}
+			if ($scriptNumber -eq 8  -or $scriptNumber -eq 99) {$ScriptList+="createSharedFolders.ps1"}
 			if ($scriptNumber -eq 9  -or $scriptNumber -eq 99) {$ScriptList+="Msutil.ps1"}
 			if ($scriptNumber -eq 10 -or $scriptNumber -eq 99) {$ScriptList+="SetFolderPermissions.ps1"}
 			if ($scriptNumber -eq 11 -or $scriptNumber -eq 99) {$ScriptList+="Initiate.ps1"}
 			if ($scriptNumber -eq 12 -or $scriptNumber -eq 99) {$ScriptList+="AppFabricSetup.ps1"}
-			if ($scriptNumber -eq 13 -or $scriptNumber -eq 99) {$ScriptList+="registerAppCerts.ps1"}
+			if ($scriptNumber -eq 13 -or $scriptNumber -eq 99) {$ScriptList+="registerAppCert.ps1"}
 			if ($scriptNumber -eq 14 -or $scriptNumber -eq 99) {$ScriptList+="buildoutAllScripts.ps1"}
-
+				
+			
 			if (!($ScriptList)) {
 					Write-host -ForegroundColor Red "`nThe scriptNumber $scriptNumber entered does not match validation list, not running any scripts."
 					exit
 			}
 			
-			# Loop thorugh the selected scripts
+			# Loop through the selected scripts
 			foreach ($scriptName in $ScriptList) {
 				Write-host -ForegroundColor Green "`nExecuting script $scriptName"
 				
 				# Either run in current directory on current server, or run on remote server
 				if ($runLocal) {
 					Write-host -ForegroundColor Green "Executing on local server $destinationWinRMServer"
+					# Get latest version of scripts
+					# ...
+					
 					try
 					{
-						Invoke-Expression -command "$scriptName -EnvironmentConfig $config -MachineConfig $machine"
+						Invoke-Expression -command ".\$scriptName -EnvironmentConfig $config -MachineConfig $machine"
 						write-host "Command execution successful"
 					}
 					finally {}
 				}
 				else {
-					$destinationWinRMServer = [string]::Format("{0}", $machine.HwebName)
+					$destinationServer = [string]::Format("{0}", $machine.HwebName)
 						
 					$currentexecuter= $machine.domain +"\"+"$currentuser"
 					$password=SetPassword -user $currentexecuter 
-					$Destination = "\\"+$machine.MachineIp+"\"+$machine.PackageDestination
-
+					# Optionaly, push latest version of scripts
+					# ...
+					
 					Write-host -ForegroundColor Green "Executing on remote server $destinationWinRMServer"
-					$scriptBlock = { 
-						param($p1,$p2) pushd C:\Hwebsource\scripts
-						C:\Hwebsource\scripts\$scriptName $p1 $p2
-						$argsList = $config,$machine
-				}
-					executeScriptInRemoteSession -scriptBlock $scriptBlock -argsList $argsList -deployLoginame $currentexecuter -deployUserPassword $password -serverFQDN $destinationWinRMServer
+					$argsList = $config,$machine
+					executeScriptFileInRemoteSession -filePath $scriptName -argsList $argsList -deployLoginame $currentexecuter -deployUserPassword $password -serverFQDN $destinationServer
+					#$scriptBlock = { 
+					#	param($p1,$p2) pushd C:\Hwebsource\scripts
+					#	C:\Hwebsource\scripts\$scriptName $p1 $p2
+					#	$argsList = $config,$machine
+					#}
+					#executeScriptInRemoteSession -scriptBlock $scriptBlock -argsList $argsList -deployLoginame $currentexecuter -deployUserPassword $password -serverFQDN $destinationWinRMServer
 				}
 				Write-host -ForegroundColor Green "Script execution complete for $scriptName"
-			}
+			}			
 		}
 	}	
 }
-Write-host -ForegroundColor Green "`nEnd of runBuildoutScripts"
+Write-host -ForegroundColor Green "`n# # # # # # # # # # End of runBuildoutScripts # # # # # # # # # #"
