@@ -63,14 +63,17 @@
 	runBuildoutScripts.ps1 -EnvironmentPrefix Prod -noDatabase 1 -runLocal -servers 34
 #>
 
-param (
-	[string] $EnvironmentPrefix = $(throw "You must specify a environment."),
-	[string] $scriptNumber = $(throw "script number missing"),
-	$servers=$null,
+param (	
+	[String][parameter(Mandatory=$true)][ValidateSet("Prod")] $EnvironmentPrefix,
+	[String][parameter(Mandatory=$true)] $scriptNumber,
+	[String][parameter(Mandatory=$true)]$servers=$null,
 	[switch]$noDatabase,
 	[switch]$runLocal
 	)
-
+	
+#[String][parameter(Mandatory=$true)] $EnvironmentPrefix = $(throw "You must specify an environment."),
+#[String][parameter(Mandatory=$true)] [ValidateSet("Prod")] $EnvironmentPrefix
+#[String][parameter(Mandatory=$true)] $scriptNumber = $(throw "script number missing"),
 $ErrorActionPreference = "Stop"
 	
 Write-host -ForegroundColor Yellow "`n# # # # # # # # # # Start of runBuildoutScripts # # # # # # # # # # `n"
@@ -85,8 +88,6 @@ $filedate =(Get-Date).ToString("yyyyMMddhhmmss")
 $LogFileName = "$($env:computername)_" + $filedate + ".log"
 
 $LogFile = Enable-LogFile -Path $LogFileName
-
-
 
 # Check if current console has admin rights
 $isAdmin = $null
@@ -114,90 +115,81 @@ if($servers)
 	}
 }
 
-# Make sure we have a server selected from buildoutSetup.config
-# Override that server selection if $server value(s) were passed into the script 
-# <codedeployed> flag will be false for the server that is being built.
+# Server selection $server value(s) is passed into the script 
+# <codedeployed> flag is no longer being used, however we still need machine info from the config file.
 $serverCount=0
 if ($machines.count)
 {
 	# Loop through each of the machines in the configuration
-	foreach ($machine in $machines)
-	{
-	    $Hwebname=$machine.HwebName
+	foreach ($machine in $machines) {
+		$Hwebname=$machine.HwebName
 		write-host -ForegroundColor Yellow "Reading data for Web server $Hwebname"
 		
 		# If one or more server number was passed into the script, only use those servers
-		if($serverlist)
-	    {
+		if($serverlist) {
 			# Obtain the server number from the configuration list
 			# Web server name is in the format "SJPRWEBxx.RHF.AD", e.g. "SJPRWEB12.RHF.AD"
 			$machine.HwebName -match "\d+"
 			$Hwebnumber=$matches[0]
+			
 			if (!($Hwebnumber)) {
-				write-host -ForegroundColor Red "Cannot read server number from configuration file"
-				exit
+			    write-host -ForegroundColor Red "Cannot read server number from configuration file"
+			    exit
 			}
 
 			# "-contains" ignores leading zeros
-			if ($serverlist -contains $Hwebnumber)
-			{
-				$ExecuteScripts=$True
-				$serverCount++
-				write-host -ForegroundColor Yellow "Web server $Hwebname will be processed. (path1)"
-				write-host -ForegroundColor Yellow "Incremented Machine Count: $serverCount"		
+			if ($serverlist -contains $Hwebnumber) {
+			    $ExecuteScripts=$True
+			    $serverCount++
+			    write-host -ForegroundColor Yellow "Web server $Hwebname will be processed."
+			    write-host -ForegroundColor Yellow "Incremented Machine Count: $serverCount"		
 			}
-			else
-			{
-				$ExecuteScripts=$False
-				write-host -ForegroundColor Yellow "Web server $Hwebname will not be processed. (path1)"
-				}			
-        }
-	
-	    if($ExecuteScripts -eq $True)
-	    {	
-			write-host -ForegroundColor Yellow "`nExecuting scripts on $Hwebname"
-							
-			# Run the script indicated by the script number entered in the run command
-			$ScriptList=@()
-			if ($scriptNumber -eq 1  -or $scriptNumber -eq 99) {$ScriptList+="createSharedFolders.ps1"}
-			if ($scriptNumber -eq 2  -or $scriptNumber -eq 99) {$ScriptList+="createSharedFolders.ps1"}
-			if ($scriptNumber -eq 3  -or $scriptNumber -eq 99) {$ScriptList+="createSharedFolders.ps1"}
-						
-			
-			if (!($ScriptList)) {
-				Write-host -ForegroundColor Red "`nThe scriptNumber $scriptNumber entered does not match validation list, not running any scripts."
-				exit
-			}
-			
-			# Loop through the selected scripts
-			foreach ($scriptName in $ScriptList) {
-				#Write-host -ForegroundColor Green "`nExecuting script $scriptName"
-				
-				# Either run in current directory on current server, or run on remote server
-				if ($runLocal) {
-					$computer=Get-WmiObject -Class Win32_ComputerSystem
-					$name=$computer.name
-					#Write-host -ForegroundColor Green "Running locally on server $name"
-					try
-					{
-						Invoke-Expression -command ".\$scriptName -EnvironmentConfig $config -MachineConfig $machine"
-						write-host "Command execution successful"
-					}
-					finally {}
-				}
-				else {
-					$destinationServer = [string]::Format("{0}", $machine.HwebName)
-						
-					$currentexecuter= $machine.domain +"\"+"$currentuser"
-					$password=SetPassword -user $currentexecuter 
-										
-					Write-host -ForegroundColor Green "Executing on remote server $destinationWinRMServer"
-					$argsList = $config,$machine
-					executeScriptFileInRemoteSession -filePath $scriptName -argsList $argsList -deployLoginame $currentexecuter -deployUserPassword $password -serverFQDN $destinationServer
-				}
-				Write-host -ForegroundColor Yellow "Script execution complete for $scriptName"
+			else {
+			    $ExecuteScripts=$False
+			    write-host -ForegroundColor Yellow "Web server $Hwebname will not be processed."
 			}			
 		}
+	
+	    if($ExecuteScripts -eq $True) {	
+		write-host -ForegroundColor Yellow "`nExecuting scripts on $Hwebname"
+		# Run the script indicated by the script number entered in the run command
+		$ScriptList=@()
+		if ($scriptNumber -eq 1  -or $scriptNumber -eq 99) {$ScriptList+="createSharedFolders.ps1"}
+		if ($scriptNumber -eq 2  -or $scriptNumber -eq 99) {$ScriptList+="registerUrls.ps1"}
+		#if ($scriptNumber -eq 3  -or $scriptNumber -eq 99) {$ScriptList+="registerAppCert.ps1"}
+						
+			
+		if (!($ScriptList)) {
+			Write-host -ForegroundColor Red "`nThe scriptNumber $scriptNumber entered does not match validation list, not running any scripts."
+			exit
+		}
+			
+		# Loop through the selected scripts
+		foreach ($scriptName in $ScriptList) {
+			#Write-host -ForegroundColor Green "`nExecuting script $scriptName"
+				
+			# Either run in current directory on current server, or run on remote server
+			if ($runLocal) {
+				$computer=Get-WmiObject -Class Win32_ComputerSystem
+				$name=$computer.name
+				#Write-host -ForegroundColor Yellow "Running locally on server $name"
+				try {
+					Invoke-Expression -command ".\$scriptName -EnvironmentConfig $config -MachineConfig $machine"
+					write-host "Command execution successful"
+				}
+				finally {}
+			}
+			else {
+				$destinationServer = [string]::Format("{0}", $machine.HwebName)
+				$currentexecuter= $machine.domain +"\"+"$currentuser"
+				$password=SetPassword -user $currentexecuter 
+				Write-host -ForegroundColor Yellow "Executing on remote server $destinationWinRMServer"
+				$argsList = $config,$machine
+				executeScriptFileInRemoteSession -filePath $scriptName -argsList $argsList -deployLoginame $currentexecuter -deployUserPassword $password -serverFQDN $destinationServer
+			}
+			Write-host -ForegroundColor Yellow "Script execution complete for $scriptName"
+		}			
+	    }
 	}	
 }
 Write-host -ForegroundColor Yellow "`n# # # # # # # # # # End of runBuildoutScripts # # # # # # # # # # `n"

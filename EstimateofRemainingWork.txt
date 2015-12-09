@@ -1,0 +1,36 @@
+Every script:
+
+Error handling - no
+Logging - no
+Output pattern including Script identification - no
+synopsis - no
+
+
+Individual scripts:
+Error handling  (0.5h)
+Logging (1h)
+Output pattern (1h)
+synopsis (1h)
+
+
+List-Needs:
+configureWinRM - output pattern, logging, error handling, synopsis
+
+PushCenterAgent - output pattern, logging, error handling, synopsis
+
+registerAppCert - output pattern, synopsis
+
+registerUrls - output pattern, synopsis
+
+DCOM - not created yet
+
+createSharedFolders - output pattern, synopsis
+
+ConfigureInitiate - output pattern, logging, error handling, synopsis
+
+msdtcValidation - not created yet
+
+SetSslRenegotiationFlag - output pattern, logging, error handling, synopsis
+
+GetDTD - output pattern, logging, error handling, synopsis
+
