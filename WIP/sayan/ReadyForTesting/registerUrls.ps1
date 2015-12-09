@@ -37,7 +37,7 @@ param
 
 
 
-Write-Host -ForegroundColor Green "Start Script - registerUrls"
+Write-Host -ForegroundColor Green "START Script - registerUrls"
 
 $perm = $MachineConfig.RelayServicesAccount
 $urls = @(
@@ -61,5 +61,5 @@ foreach ($url in $urls) {
 	Handle-Error $LastExitCode "RegisterUrls.ps1 - Add Url  - $url"
 }
 
-Write-Host -ForegroundColor Green "Start Script - registerUrls"
+Write-Host -ForegroundColor Green "END Script - registerUrls"
 

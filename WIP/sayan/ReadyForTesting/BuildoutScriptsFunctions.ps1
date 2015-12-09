@@ -135,6 +135,7 @@ function executeScriptFileInRemoteSession( $filePath, $argsList, $deployLoginame
 	
 	try
 	{
+		Invoke-Command -session $session -filePath .\BuildoutScriptsFunctions.ps1
 		Invoke-Command -session $session -filePath $filePath -argumentList $argsList
 		write-host "Command execution successful"
 	}
