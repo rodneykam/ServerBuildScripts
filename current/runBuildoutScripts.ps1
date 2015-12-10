@@ -22,26 +22,9 @@
 	including the number ($scriptNumber) corresponding to the script that is desired to be run.
 
 	Use this script to run the following:
-		Option 1 - run the AllBuildScripts.ps1 script (Number 99)
-		Option 2 - run individual scripts contained in the AllBuildScripts.ps1 script independently
+		Option 1 - run all buildout scripts (input $scriptNumber 99)
+		Option 2 - run individual scripts independently (input $scriptNumber other than 99)
 	
-	Script				Number	
-	=====================================
-	hostnamessingleip.ps1		(1)		
-	dotnetcharge.ps1		(2)		
-	stats.ps1			(3)
-	permtest.ps1			(4)
-	metascan.ps1			(5)		
-	audit.ps1			(6)		
-	wintertree.ps1			(7)		
-	hiddenshares.ps1		(8)		
-	Msutil.ps1			(9)		
-	SetFolderPermissions.ps1	(10)	
-	Initiate.ps1			(11)	
-	AppFabricSetup.ps1		(12)
-	registerAppCerts.ps1		(13)		
-	run all scripts 		(99)
-
 	$servers is a comma-delimited list of servers to deploy to. This overrides the "CodeDeployed" flag on
 	the buildoutSetup.config configuration for the server. Leave this blank to use the buildoutSetup.config 
 	configuration.  Use only the number portion of the servername, example for SJPRWEB34 use "-servers 34".
@@ -154,10 +137,24 @@ if ($machines.count)
 		write-host -ForegroundColor Yellow "`nExecuting scripts on $Hwebname"
 		# Run the script indicated by the script number entered in the run command
 		$ScriptList=@()
-		if ($scriptNumber -eq 1  -or $scriptNumber -eq 99) {$ScriptList+="createSharedFolders.ps1"}
-		if ($scriptNumber -eq 2  -or $scriptNumber -eq 99) {$ScriptList+="registerUrls.ps1"}
-		#if ($scriptNumber -eq 3  -or $scriptNumber -eq 99) {$ScriptList+="registerAppCert.ps1"}
-						
+		
+		if ($scriptNumber -eq 1 -or $scriptNumber -eq 99) {$ScriptList+="configureWinRM.ps1"}
+		if ($scriptNumber -eq 2 -or $scriptNumber -eq 99) {$ScriptList+="GetDTD.ps1"}
+#		if ($scriptNumber -eq 3 -or $scriptNumber -eq 99) {$ScriptList+="hostnamessingleip.ps1"}
+#		if ($scriptNumber -eq 4 -or $scriptNumber -eq 99) {$ScriptList+="dotnetcharge.ps1"}
+#		if ($scriptNumber -eq 5 -or $scriptNumber -eq 99) {$ScriptList+="stats.ps1"}
+		if ($scriptNumber -eq 6 -or $scriptNumber -eq 99) {$ScriptList+="registerUrls.ps1"}
+#		if ($scriptNumber -eq 7 -or $scriptNumber -eq 99) {$ScriptList+="metascan.ps1"}
+#		if ($scriptNumber -eq 8 -or $scriptNumber -eq 99) {$ScriptList+="audit.ps1"}
+#		if ($scriptNumber -eq 9 -or $scriptNumber -eq 99) {$ScriptList+="wintertree.ps1"}
+		if ($scriptNumber -eq 10 -or $scriptNumber -eq 99) {$ScriptList+="createSharedFolders.ps1"}
+#		if ($scriptNumber -eq 11 -or $scriptNumber -eq 99) {$ScriptList+="Msutil.ps1"}
+#		if ($scriptNumber -eq 12 -or $scriptNumber -eq 99) {$ScriptList+="SetFolderPermissions.ps1"}
+#		if ($scriptNumber -eq 13 -or $scriptNumber -eq 99) {$ScriptList+="ConfigureInitiate.ps1"}
+		if ($scriptNumber -eq 14 -or $scriptNumber -eq 99) {$ScriptList+="registerAppCert.ps1"}
+#		if ($scriptNumber -eq 15 -or $scriptNumber -eq 99) {$ScriptList+="createPushCenterAgentTask.ps1"}
+#		if ($scriptNumber -eq 16 -or $scriptNumber -eq 99) {$ScriptList+="SetSslRenegotiationFlag.ps1"}
+								
 			
 		if (!($ScriptList)) {
 			Write-host -ForegroundColor Red "`nThe scriptNumber $scriptNumber entered does not match validation list, not running any scripts."
