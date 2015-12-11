@@ -10,10 +10,10 @@ Individual scripts:
 Error handling  (0.5h)
 Logging (1h)
 Output pattern (1h)
-synopsis (1h)
+Synopsis (1h)
+Validation (?)
 
-
-List-Needs:
+Script Needs:
 configureWinRM - output pattern, logging, error handling, synopsis
 
 PushCenterAgent - output pattern, logging, error handling, synopsis
