@@ -1,10 +1,4 @@
-﻿#####################################################################################
-# Create a network share and grant Everyone Full Control.  
-# Does not modify NTFS permissions.
-# Jan, 2012 N.Johnson
-#####################################################################################
-
-<#
+﻿<#
 .SYNOPSIS
 	This script creates the required shared folders on the server
 	
@@ -17,6 +11,10 @@
     ShuntedEmails$        E:\RelayHealth\ShuntedEmails"),
     Logs$                 E:\RelayHealth\Logs")
 	
+	
+.PARAMETER EnvironmentConfig
+
+.PARAMETER MachineConfig	
 	
 .EXAMPLE 
 
@@ -158,7 +156,12 @@ Function New-Share (
 # Main
 #####################################################################################
 $scriptName = "createSharedFolders.ps1"
-Write-Host -ForegroundColor Green "`nSTART SCRIPT - $scriptName running on $env:computername`n"
+$computer=Get-WmiObject -Class Win32_ComputerSystem
+$name=$computer.name
+$domain=$computer.domain
+$computername="$name"+".$domain"
+
+Write-Host -ForegroundColor Green "`nSTART SCRIPT - $scriptName running on $computername`n"
 
 $shares = @(
 ("InteropShuntedEmails$", "E:\RelayHealth\InteropShuntedEmails"),
@@ -180,4 +183,4 @@ foreach ($share in $shares) {
     Write-Output $result.Message
 }
 
-Write-Host -ForegroundColor Green "`nEND SCRIPT - $scriptName running on $env:computername`n"
+Write-Host -ForegroundColor Green "`nEND SCRIPT - $scriptName running on $computername`n"

@@ -1,18 +1,17 @@
-#############################################################################
-##
-## configureWinRM
-##   
-## 10/2015, RelayHealth
-## Martin Evans
-##
-##############################################################################
-
 <#
 .SYNOPSIS
 	This script configures Windows Remoting WinRM listener to use HTTPS on a web server
 
 .DESCRIPTION
     The script will enable (default action) or disable WinRM.
+	
+	The script will alse enumerate the existing WinRM listeners on the computer.
+	
+.PARAMETER EnvironmentConfig
+
+.PARAMETER MachineConfig
+
+.PARAMETER remove
 	
 .EXAMPLE 
 
@@ -28,7 +27,12 @@ param
 
 $scriptName = "configureWinRM"
 
-Write-Host -ForegroundColor Green "`nSTART SCRIPT - $scriptName running on $env:computername`n"
+$computer=Get-WmiObject -Class Win32_ComputerSystem
+$name=$computer.name
+$domain=$computer.domain
+$computername="$name"+".$domain"
+
+Write-Host -ForegroundColor Green "`nSTART SCRIPT - $scriptName running on $computername`n"
 
 # Checking whether WinRM listeners are configured
 $listeners= winrm enumerate winrm/config/listener
@@ -107,4 +111,4 @@ Handle-Error $LastExitCode $result
 Write-host -ForegroundColor Green "`n Here are all the listeners on  this  $computername"
 winrm enumerate winrm/config/listener
 
-Write-Host -ForegroundColor Green "`nEND SCRIPT - $scriptName running on $env:computername`n"
+Write-Host -ForegroundColor Green "`nEND SCRIPT - $scriptName running on $computername`n"

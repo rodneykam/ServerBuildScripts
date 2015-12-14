@@ -1,33 +1,19 @@
 <#
 .SYNOPSIS
 	This script applies permissions to certificates to grant certain accounts to utilize those certificates.
-
-	Includes a verification that the certificate permissions have been granted
 	
 .DESCRIPTION
 
-	Expected output of the raw winhttpcertcfg.exe application is:
+	The account "HVRelayServicesAccount" is given permission on the following certificates. 
+	"emr-prod.relayhealth.com"
+	"healthvault.relayhealth.com"
+	"VortexrToolsClient"
 	
-		Microsoft (R) WinHTTP Certificate Configuration Tool
-		Copyright (C) Microsoft Corporation 2001.
-
-		Matching certificate:
-		CN=MEVANS-Z620.healinx.inside
-
-		Granting private key access for account:
-			NT AUTHORITY\NETWORK SERVICE
-
-	or:
-		Microsoft (R) WinHTTP Certificate Configuration Tool
-		Copyright (C) Microsoft Corporation 2001.
-
-		Matching certificate:
-		CN=MEVANS-Z620.healinx.inside
-
-
-		Private key access has already been granted for account:
-			NT AUTHORITY\NETWORK SERVICE
+	We are doing this by calling the executable winhttpcertcfg.exe located in E:\RegisterAppCert directory.
 	
+.PARAMETER EnvironmentConfig
+
+.PARAMETER MachineConfig
 	
 .EXAMPLE 
 
@@ -40,8 +26,12 @@ param
 )
 
 $scriptName = "registerAppCert"
-Write-Host -ForegroundColor Green "`nSTART SCRIPT - $scriptName running on $env:computername`n"
+$computer=Get-WmiObject -Class Win32_ComputerSystem
+$name=$computer.name
+$domain=$computer.domain
+$computername="$name"+".$domain"
 
+Write-Host -ForegroundColor Green "`nSTART SCRIPT - $scriptName running on $computername`n"
 # Find the certificates and the winhttpcertcfg executable
 $emrsubject = "emr-prod.relayhealth.com"
 $hvaultsubject = "healthvault.relayhealth.com"
@@ -119,4 +109,4 @@ foreach ($certName in $emrsubject,$hvaultsubject,$vortexsubject) {
 	}
 }
 
-Write-Host -ForegroundColor Green "`nEND SCRIPT - $scriptName running on $env:computername`n"
+Write-Host -ForegroundColor Green "`nEND SCRIPT - $scriptName running on $computername`n"

@@ -1,13 +1,3 @@
-#############################################################################
-##
-## permtest
-##
-## 11/2015, RelayHealth
-## Martin Evans
-##
-##############################################################################
-
-
 <#
 .SYNOPSIS
 	This script gives the RelayServicesAccount permission to the URLs defined in IIS
@@ -24,7 +14,11 @@
     "http://localhost:8888/patient/DrugBenefitRxHistoryService/"
     "http://localhost:4762/PayorEligibilityService/"
     "http://+:4240/relayhealth/simulator/faxServer/"
-	
+
+.PARAMETER EnvironmentConfig
+
+.PARAMETER MachineConfig
+
 .EXAMPLE 
 
 #>
@@ -37,7 +31,12 @@ param
 
 $scriptName = "registerUrls"
 
-Write-Host -ForegroundColor Green "`nSTART SCRIPT - $scriptName running on $env:computername`n"
+$computer=Get-WmiObject -Class Win32_ComputerSystem
+$name=$computer.name
+$domain=$computer.domain
+$computername="$name"+".$domain"
+
+Write-Host -ForegroundColor Green "`nSTART SCRIPT - $scriptName running on $computername`n"
 
 $perm = $MachineConfig.RelayServicesAccount
 $urls = @(
@@ -61,5 +60,5 @@ foreach ($url in $urls) {
 	Handle-Error $LastExitCode "$url - $result"
 }
 
-Write-Host -ForegroundColor Green "`nEND SCRIPT - $scriptName running on $env:computername`n"
+Write-Host -ForegroundColor Green "`nEND SCRIPT - $scriptName running on $computername`n"
 

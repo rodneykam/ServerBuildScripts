@@ -152,7 +152,7 @@ function Handle-Error
     param ($ParsedLEC, $message)
 
     if ($ParsedLEC -ne 0){
-	    Write-Error "$message"
+	    Write-Host -ForegroundColor Red "$message"
         exit
 	}
     ELSE{	
