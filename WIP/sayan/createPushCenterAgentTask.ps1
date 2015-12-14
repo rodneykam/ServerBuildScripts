@@ -30,15 +30,7 @@ Write-host -ForegroundColor Green "`nStart of Create Push Center Agent scheduled
 $Account = [String]$MachineConfig.ScheduledTaskAccount
 $Password = [String]$MachineConfig.ScheduledTaskPassword
 
-<#
 if (!( test-path -Path PushCenterAgent.xml)) {
-	Write-host -ForegroundColor Red "Cannot find Scheduled Task configuration file PushCenterAgent.xml"
-	exit
-	# Getting this error. Going to define the path on the local server.
-}
-#>
-
-if (!( test-path -Path C:\Buildout\PushCenterAgent.xml)) {
 	Write-host -ForegroundColor Red "Cannot find Scheduled Task configuration file PushCenterAgent.xml"
 	exit
 }
@@ -48,7 +40,7 @@ Write-host -ForegroundColor Green "Running command: schtasks /Create /XML ./Push
 $result = invoke-expression "schtasks /Create /XML ./PushCenterAgent.xml /TN $taskName /RU `"$Account`" /RP `"$Password`" /F 2>&1"
 $result
 
-if (($LastExitCode -ne 0) -or (!($result -match "SUCCESS"))) {
+if (($LastExitCode -ne 0) -or (!($result -match "SUCCESS")) {
 	Write-host -ForegroundColor Red "Failed to create scheduled task PushCenterAgent"
 	exit
 }
@@ -56,7 +48,7 @@ if (($LastExitCode -ne 0) -or (!($result -match "SUCCESS"))) {
 Write-host -ForegroundColor Green "Verify that the task was created"
 $result = invoke-expression ".\schtasks.exe /query /FO TABLE /TN PushCenterAgent"
 
-if (($LastExitCode -ne 0) -or (!($result -match "SUCCESS"))) {
+if (($LastExitCode -ne 0) -or (!($result -match "SUCCESS")) {
 	Write-host -ForegroundColor Red "Scheduled task PushCenterAgent does not exist"
 	exit
 }

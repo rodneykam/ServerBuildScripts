@@ -51,15 +51,13 @@ param (
 	[String][parameter(Mandatory=$true)] $scriptNumber,
 	[String][parameter(Mandatory=$true)]$servers=$null,
 	[switch]$noDatabase,
-	[switch]$runLocal
+	[switch]$runLocal,
+	[switch] $remove  #added for configureWinRM script
 	)
 	
-#[String][parameter(Mandatory=$true)] $EnvironmentPrefix = $(throw "You must specify an environment."),
-#[String][parameter(Mandatory=$true)] [ValidateSet("Prod")] $EnvironmentPrefix
-#[String][parameter(Mandatory=$true)] $scriptNumber = $(throw "script number missing"),
 $ErrorActionPreference = "Stop"
 	
-Write-host -ForegroundColor Yellow "`n# # # # # # # # # # Start of runBuildoutScripts # # # # # # # # # # `n"
+Write-host -ForegroundColor Magenta "`n# # # # # # # # # # Start of runBuildoutScripts # # # # # # # # # # `n"
 
 # Import-Module that contains custom functions
 #Import-Module -Name .\BuildoutPackageExecuterFunctions.ps1 -removing because we are using new name and new functions
@@ -101,12 +99,11 @@ if($servers)
 # Server selection $server value(s) is passed into the script 
 # <codedeployed> flag is no longer being used, however we still need machine info from the config file.
 $serverCount=0
-if ($machines.count)
-{
+if ($machines.count) {
 	# Loop through each of the machines in the configuration
 	foreach ($machine in $machines) {
 		$Hwebname=$machine.HwebName
-		write-host -ForegroundColor Yellow "Reading data for Web server $Hwebname"
+		write-host -ForegroundColor Magenta "Reading data for Web server $Hwebname"
 		
 		# If one or more server number was passed into the script, only use those servers
 		if($serverlist) {
@@ -124,69 +121,71 @@ if ($machines.count)
 			if ($serverlist -contains $Hwebnumber) {
 			    $ExecuteScripts=$True
 			    $serverCount++
-			    write-host -ForegroundColor Yellow "Web server $Hwebname will be processed."
-			    write-host -ForegroundColor Yellow "Incremented Machine Count: $serverCount"		
+			    write-host -ForegroundColor Magenta "Web server $Hwebname will be processed."
+			    write-host -ForegroundColor Magenta "Incremented Machine Count: $serverCount"		
 			}
 			else {
 			    $ExecuteScripts=$False
-			    write-host -ForegroundColor Yellow "Web server $Hwebname will not be processed."
+			    write-host -ForegroundColor Magenta "Web server $Hwebname will not be processed."
 			}			
 		}
 	
 	    if($ExecuteScripts -eq $True) {	
-		write-host -ForegroundColor Yellow "`nExecuting scripts on $Hwebname"
-		# Run the script indicated by the script number entered in the run command
-		$ScriptList=@()
-		
-		if ($scriptNumber -eq 1 -or $scriptNumber -eq 99) {$ScriptList+="configureWinRM.ps1"}
-		if ($scriptNumber -eq 2 -or $scriptNumber -eq 99) {$ScriptList+="GetDTD.ps1"}
-#		if ($scriptNumber -eq 3 -or $scriptNumber -eq 99) {$ScriptList+="hostnamessingleip.ps1"}
-#		if ($scriptNumber -eq 4 -or $scriptNumber -eq 99) {$ScriptList+="dotnetcharge.ps1"}
-#		if ($scriptNumber -eq 5 -or $scriptNumber -eq 99) {$ScriptList+="stats.ps1"}
-		if ($scriptNumber -eq 6 -or $scriptNumber -eq 99) {$ScriptList+="registerUrls.ps1"}
-#		if ($scriptNumber -eq 7 -or $scriptNumber -eq 99) {$ScriptList+="metascan.ps1"}
-#		if ($scriptNumber -eq 8 -or $scriptNumber -eq 99) {$ScriptList+="audit.ps1"}
-#		if ($scriptNumber -eq 9 -or $scriptNumber -eq 99) {$ScriptList+="wintertree.ps1"}
-		if ($scriptNumber -eq 10 -or $scriptNumber -eq 99) {$ScriptList+="createSharedFolders.ps1"}
-#		if ($scriptNumber -eq 11 -or $scriptNumber -eq 99) {$ScriptList+="Msutil.ps1"}
-#		if ($scriptNumber -eq 12 -or $scriptNumber -eq 99) {$ScriptList+="SetFolderPermissions.ps1"}
-#		if ($scriptNumber -eq 13 -or $scriptNumber -eq 99) {$ScriptList+="ConfigureInitiate.ps1"}
-		if ($scriptNumber -eq 14 -or $scriptNumber -eq 99) {$ScriptList+="registerAppCert.ps1"}
-#		if ($scriptNumber -eq 15 -or $scriptNumber -eq 99) {$ScriptList+="createPushCenterAgentTask.ps1"}
-#		if ($scriptNumber -eq 16 -or $scriptNumber -eq 99) {$ScriptList+="SetSslRenegotiationFlag.ps1"}
-								
+			write-host -ForegroundColor Magenta "`nExecuting scripts on $Hwebname"
+			# Run the script indicated by the script number entered in the run command
+			$ScriptList=@()
+			if ($scriptNumber -eq 1 -or $scriptNumber -eq 99) {$ScriptList+="configureWinRM.ps1"}
+			if ($scriptNumber -eq 2 -or $scriptNumber -eq 99) {$ScriptList+="GetDTD.ps1"}
+			#if ($scriptNumber -eq 3 -or $scriptNumber -eq 99) {$ScriptList+="hostnamessingleip.ps1"}
+			#if ($scriptNumber -eq 4 -or $scriptNumber -eq 99) {$ScriptList+="stats.ps1"}
+			if ($scriptNumber -eq 5 -or $scriptNumber -eq 99) {$ScriptList+="registerUrls.ps1"}
+			#if ($scriptNumber -eq 6 -or $scriptNumber -eq 99) {$ScriptList+="metascan.ps1"}
+			if ($scriptNumber -eq 7 -or $scriptNumber -eq 99) {$ScriptList+="createSharedFolders.ps1"}
+			#if ($scriptNumber -eq 8 -or $scriptNumber -eq 99) {$ScriptList+="Msutil.ps1"}
+			if ($scriptNumber -eq 9 -or $scriptNumber -eq 99) {$ScriptList+="SetFolderPermissions.ps1"}
+			#if ($scriptNumber -eq 10 -or $scriptNumber -eq 99) {$ScriptList+="ConfigureInitiate.ps1"}
+			if ($scriptNumber -eq 11 -or $scriptNumber -eq 99) {$ScriptList+="registerAppCert.ps1"}
+			if ($scriptNumber -eq 12 -or $scriptNumber -eq 99) {$ScriptList+="createPushCenterAgentTask.ps1"}
+			#if ($scriptNumber -eq 13 -or $scriptNumber -eq 99) {$ScriptList+="SetSslRenegotiationFlag.ps1"}
 			
-		if (!($ScriptList)) {
-			Write-host -ForegroundColor Red "`nThe scriptNumber $scriptNumber entered does not match validation list, not running any scripts."
-			exit
-		}
+# Additional scripts that may not end up in the final list
+# I will comment them out after verifying that they run.			
+			#if ($scriptNumber -eq 20 -or $scriptNumber -eq 99) {$ScriptList+="dotnetcharge.ps1"}
+			#if ($scriptNumber -eq 21 -or $scriptNumber -eq 99) {$ScriptList+="audit.ps1"}
+			#if ($scriptNumber -eq 22 -or $scriptNumber -eq 99) {$ScriptList+="wintertree.ps1"}
 			
-		# Loop through the selected scripts
-		foreach ($scriptName in $ScriptList) {
-			#Write-host -ForegroundColor Green "`nExecuting script $scriptName"
+		    if (!($ScriptList)) {
+			    Write-host -ForegroundColor Red "`nThe scriptNumber $scriptNumber entered does not match validation list, not running any scripts."
+			    exit
+		    }
+			
+		    # Loop through the selected scripts
+		    foreach ($scriptName in $ScriptList) {
+		    	#Write-host -ForegroundColor Green "`nExecuting script $scriptName"
 				
-			# Either run in current directory on current server, or run on remote server
-			if ($runLocal) {
-				$computer=Get-WmiObject -Class Win32_ComputerSystem
-				$name=$computer.name
-				#Write-host -ForegroundColor Yellow "Running locally on server $name"
-				try {
-					Invoke-Expression -command ".\$scriptName -EnvironmentConfig $config -MachineConfig $machine"
-					write-host "Command execution successful"
-				}
+			    # Either run in current directory on current server, or run on remote server
+			    if ($runLocal) {
+			    	$computer=Get-WmiObject -Class Win32_ComputerSystem
+				    $name=$computer.name
+				    #Write-host -ForegroundColor Magenta "Running locally on server $name"
+				    try 
+					{
+					    Invoke-Expression -command ".\$scriptName -EnvironmentConfig $config -MachineConfig $machine"
+					    write-host "Command execution successful"
+				    }
 				finally {}
-			}
+			    }
 			else {
 				$destinationServer = [string]::Format("{0}", $machine.HwebName)
 				$currentexecuter= $machine.domain +"\"+"$currentuser"
 				$password=SetPassword -user $currentexecuter 
-				Write-host -ForegroundColor Yellow "Executing on remote server $destinationWinRMServer"
+				Write-host -ForegroundColor Magenta "Executing on remote server $destinationWinRMServer"
 				$argsList = $config,$machine
 				executeScriptFileInRemoteSession -filePath $scriptName -argsList $argsList -deployLoginame $currentexecuter -deployUserPassword $password -serverFQDN $destinationServer
 			}
-			Write-host -ForegroundColor Yellow "Script execution complete for $scriptName"
+			Write-host -ForegroundColor Magenta "Script execution complete for $scriptName"
 		}			
 	    }
 	}	
 }
-Write-host -ForegroundColor Yellow "`n# # # # # # # # # # End of runBuildoutScripts # # # # # # # # # # `n"
+Write-host -ForegroundColor Magenta "`n# # # # # # # # # # End of runBuildoutScripts # # # # # # # # # # `n"
