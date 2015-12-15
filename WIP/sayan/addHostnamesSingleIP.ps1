@@ -1,5 +1,18 @@
-# add synopsis
+<#
+.SYNOPSIS
+	This script adds entries to the hosts file.
 
+.DESCRIPTION
+    The script edits the file C:\Windows\System32\drivers\etc\hosts and adds entires for the following -
+	"machine","www","app","rtools","api","interop","salesdata","webqa","identity","rmc"
+	
+.PARAMETER EnvironmentConfig
+
+.PARAMETER MachineConfig
+
+.EXAMPLE 
+
+#>
 
 param
 (
