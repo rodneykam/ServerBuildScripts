@@ -66,6 +66,15 @@ $InitateSourceDir = [String]$EnvironmentConfig.InitiateDirectory
 $InitiateDir = "e:\mpi\product"
 $InitiateBatFile = "C:\hwebsource\initiate\unattended.cmd"
 
+$scriptName = "configureInitiate"
+
+$computer=Get-WmiObject -Class Win32_ComputerSystem
+$name=$computer.name
+$domain=$computer.domain
+$computername="$name"+".$domain"
+
+Write-Host -ForegroundColor Green "`nSTART SCRIPT - $scriptName running on $computername`n"
+
 # Check whether the basic Initiate executables are installed	
 if (-not(Test-Path -path $InitiateDir))
 { 
@@ -88,14 +97,6 @@ if (-not(Test-Path -path $InitiateDir))
 	}
 }	
 
-$scriptName = "configureInitiate"
-
-$computer=Get-WmiObject -Class Win32_ComputerSystem
-$name=$computer.name
-$domain=$computer.domain
-$computername="$name"+".$domain"
-
-Write-Host -ForegroundColor Green "`nSTART SCRIPT - $scriptName running on $computername`n"
 
 # Add the Initiate executable path to the Windows environment Path variable
 $path_var = [Environment]::GetEnvironmentVariable("PATH","Machine")

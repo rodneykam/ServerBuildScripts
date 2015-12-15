@@ -4,6 +4,14 @@ $Config,
 $MachineConfig
 )
 
+$computer=Get-WmiObject -Class Win32_ComputerSystem
+$name=$computer.name
+$domain=$computer.domain
+$computername="$name"+".$domain"
+$scriptName = "SetFolderPermissions"
+
+Write-Host -ForegroundColor Green "`nSTART SCRIPT - $scriptName running on $computername`n"
+
 if ([string]::IsNullOrEmpty($Environment) )
 {
 	$environment=$Config.Environment
@@ -183,5 +191,5 @@ foreach($PermissionGroup in $xml)
 	}
 }
 
-
+Write-Host -ForegroundColor Green "`nEND SCRIPT - $scriptName running on $computername`n"
 
