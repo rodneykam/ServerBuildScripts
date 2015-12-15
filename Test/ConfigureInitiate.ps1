@@ -1,12 +1,3 @@
-#############################################################################
-##
-## configureInitiate
-##   
-## 10/2015, RelayHealth
-## Martin Evans
-##
-##############################################################################
-
 <#
 .SYNOPSIS
 	This script configures the Initiate application on a web server
@@ -37,6 +28,10 @@
 	The server should have the basic Initiate Engine product installed, without any MDE or Passive application instance, 
 	but the script will handle the existance of instances or the case of a missing basic application installation.
 	
+.PARAMETER EnvironmentConfig
+
+.PARAMETER MachineConfig
+
 .EXAMPLE 
 
 #>
@@ -46,8 +41,6 @@ param
 	[Parameter(Mandatory=$true)] $EnvironmentConfig,
 	[Parameter(Mandatory=$true)] $MachineConfig
 )
-
-Write-host -ForegroundColor Green "`nStart of ConfigureInitiate script`n"
 
 function robocopyZipFiles
 {
@@ -94,6 +87,15 @@ if (-not(Test-Path -path $InitiateDir))
 		exit
 	}
 }	
+
+$scriptName = "configureInitiate"
+
+$computer=Get-WmiObject -Class Win32_ComputerSystem
+$name=$computer.name
+$domain=$computer.domain
+$computername="$name"+".$domain"
+
+Write-Host -ForegroundColor Green "`nSTART SCRIPT - $scriptName running on $computername`n"
 
 # Add the Initiate executable path to the Windows environment Path variable
 $path_var = [Environment]::GetEnvironmentVariable("PATH","Machine")
@@ -281,5 +283,5 @@ if ($result) {
 	exit
 }
 
-Write-host -ForegroundColor Green "`nEnd of ConfigureInitiate script`n"
+Write-Host -ForegroundColor Green "`nEND SCRIPT - $scriptName running on $computername`n"
 
