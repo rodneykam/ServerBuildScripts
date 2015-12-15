@@ -1,20 +1,15 @@
-#############################################################################
-##
-## createPushCernterAgentTask
-##   
-## 10/2015, RelayHealth
-## Martin Evans
-##
-##############################################################################
-
 <#
 .SYNOPSIS
 	This script creates the Push Center scheduled task on a web server. That task allows the automated 
 	unzip of code during code deployment.
         
 .DESCRIPTION
+    The script uses the executable "schtasks.exe" to create the scheduled tasks based on the data provided in the file "PushCenterAgent.xml"
 	
-	
+.PARAMETER EnvironmentConfig
+
+.PARAMETER MachineConfig
+
 .EXAMPLE 
 
 #>
@@ -25,7 +20,14 @@ param
 	[Parameter(Mandatory=$true)] $MachineConfig
 )
 
-Write-host -ForegroundColor Green "`nStart of Create Push Center Agent scheduled task script`n"
+$scriptName = "createPushCernterAgentTask"
+
+$computer=Get-WmiObject -Class Win32_ComputerSystem
+$name=$computer.name
+$domain=$computer.domain
+$computername="$name"+".$domain"
+
+Write-Host -ForegroundColor Green "`nSTART SCRIPT - $scriptName running on $computername`n"
 
 $Account = [String]$MachineConfig.ScheduledTaskAccount
 $Password = [String]$MachineConfig.ScheduledTaskPassword
@@ -50,6 +52,7 @@ $result
 
 if (($LastExitCode -ne 0) -or (!($result -match "SUCCESS"))) {
 	Write-host -ForegroundColor Red "Failed to create scheduled task PushCenterAgent"
+@@ -53,7 +47,7 @@ if (($LastExitCode -ne 0) -or (!($result -match "SUCCESS"))) {
 	exit
 }
 
@@ -61,4 +64,4 @@ if (($LastExitCode -ne 0) -or (!($result -match "SUCCESS"))) {
 	exit
 }
 
-Write-host -ForegroundColor Green "`nEnd of Create Push Center Agent scheduled task script`n"
+Write-Host -ForegroundColor Green "`nEND SCRIPT - $scriptName running on $computername`n"
