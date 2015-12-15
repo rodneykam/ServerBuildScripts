@@ -1,12 +1,3 @@
-#############################################################################
-##
-## getDtd
-##   
-## 10/2015, RelayHealth
-## Martin Evans
-##
-##############################################################################
-
 <#
 .SYNOPSIS
 	This script obtains and encrypts the server's environment.DTD file.
@@ -14,8 +5,13 @@
  	Includes a verification that the encrypted DTD file is usable
 
 .DESCRIPTION
-
+    The DTD file is pre-generated at \\Sjmgdep01\f$\SCM\Buildout\MachineSpecifics\<ServerName>\dirstruct\config
+	The script copies the file to the webserver and encrypts it.
 	
+.PARAMETER EnvironmentConfig
+
+.PARAMETER MachineConfig
+
 .EXAMPLE 
 
 #>
@@ -26,7 +22,14 @@ param
 	[Parameter(Mandatory=$true)] $MachineConfig
 )
 
-Write-host -ForegroundColor Green "`nStart of Get DTD File script`n"
+$scriptName = "getDtd"
+
+$computer=Get-WmiObject -Class Win32_ComputerSystem
+$name=$computer.name
+$domain=$computer.domain
+$computername="$name"+".$domain"
+
+Write-Host -ForegroundColor Green "`nSTART SCRIPT - $scriptName running on $computername`n"
 
 # Obtain the server-specific DTD file from deployment server
 $sourcePath="\\Sjmgdep01\f$\SCM\Buildout\MachineSpecifics\"+$MachineConfig.HwebName+"\dirstruct\config"
@@ -65,4 +68,4 @@ if (test-path -Path "E:\RelayHealth\DeployHelp\ParseDtd.ps1") {
 	Write-host -ForegroundColor Yellow "DTD read successful"
 }
 
-Write-host -ForegroundColor Green "`nEnd of Get DTD File script`n"
+Write-Host -ForegroundColor Green "`nEND SCRIPT - $scriptName running on $computername`n"
