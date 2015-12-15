@@ -1,20 +1,33 @@
+<#
+.SYNOPSIS
+	 This script will set permissions for the local IUSR and NetworkService accounts to launch Metascan
+ 
+.DESCRIPTION
+    Adapted from script from Brad Turner (http://www.identitychaos.com)
+	http://social.technet.microsoft.com/Forums/en-US/ilm2/thread/5db2707c-87c9-4bb2-a0eb-912363e2814a
+	
+.PARAMETER EnvironmentConfig
+
+.PARAMETER MachineConfig
+
+.EXAMPLE
+
+#>
+
 param
 (
+[Parameter(Mandatory=$true)] $EnvironmentConfig,
 [Parameter(Mandatory=$true)] $MachineConfig
 )
 
-# USAGE: 
-#
-# .\Set-Metascan-DCOM.ps1 -Principal "DOMAIN\<group or username>" 
-#
-# EXAMPLE:
-# .\Set-Metascan-DCOM.ps1 -Principal "test\twsuser@testing.com" 
-#
-# This script will also automatically set permissions for the local IUSR
-# and NetworkService accounts.
-#
-# Adapted from script from Brad Turner (http://www.identitychaos.com)
-# http://social.technet.microsoft.com/Forums/en-US/ilm2/thread/5db2707c-87c9-4bb2-a0eb-912363e2814a
+$scriptName = "setMetascanPermissions"
+
+$computer=Get-WmiObject -Class Win32_ComputerSystem
+$name=$computer.name
+$domain=$computer.domain
+$computername="$name"+".$domain"
+
+Write-Host -ForegroundColor Green "`nSTART SCRIPT - $scriptName running on $computername`n"
 
 write-Host "Set-Metascan-DCOM: Updates Permissions for Metascan"
 
@@ -125,6 +138,8 @@ if($keyValues.sNames -notcontains "AccessPermission")
 setPermissions("IUSR")
 setPermissions("NetworkService")
 setPermissions($Principal)
+
+Write-Host -ForegroundColor Green "`nEND SCRIPT - $scriptName running on $computername`n"
 
 #----------------------------------------------------------------------------------------------------------
  trap 
