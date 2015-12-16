@@ -131,33 +131,33 @@ if ($machines.count) {
 		}
 	
 	    if($ExecuteScripts -eq $True) {	
-			write-host -ForegroundColor Magenta "`nExecuting scripts on $Hwebname"
-			# Run the script indicated by the script number entered in the run command
+			# Run the script indicated by the $scriptNumber entered in the run command
+			write-host -ForegroundColor Magenta "`nExecuting scripts on $Hwebname" 
+			
 			$ScriptList=@()
 			if ($scriptNumber -eq 1 -or $scriptNumber -eq 99) {$ScriptList+="configureWinRM.ps1"}
 			if ($scriptNumber -eq 2 -or $scriptNumber -eq 99) {$ScriptList+="GetDTD.ps1"}
 			if ($scriptNumber -eq 3 -or $scriptNumber -eq 99) {$ScriptList+="addHostnamesSingleIP.ps1"}
-			#if ($scriptNumber -eq 4 -or $scriptNumber -eq 99) {$ScriptList+="stats.ps1"}
-			if ($scriptNumber -eq 5 -or $scriptNumber -eq 99) {$ScriptList+="registerUrls.ps1"}
-			if ($scriptNumber -eq 6 -or $scriptNumber -eq 99) {$ScriptList+="metascan.ps1"}
-			if ($scriptNumber -eq 7 -or $scriptNumber -eq 99) {$ScriptList+="createSharedFolders.ps1"}
-			if ($scriptNumber -eq 8 -or $scriptNumber -eq 99) {$ScriptList+="Msutil.ps1"}
-			if ($scriptNumber -eq 9 -or $scriptNumber -eq 99) {$ScriptList+="SetFolderPermissions.ps1"}
-			if ($scriptNumber -eq 10 -or $scriptNumber -eq 99) {$ScriptList+="ConfigureInitiate.ps1"}
-			if ($scriptNumber -eq 11 -or $scriptNumber -eq 99) {$ScriptList+="registerAppCert.ps1"}
-			if ($scriptNumber -eq 12 -or $scriptNumber -eq 99) {$ScriptList+="createPushCenterAgentTask.ps1"}
+			if ($scriptNumber -eq 4 -or $scriptNumber -eq 99) {$ScriptList+="registerUrls.ps1"}
+			if ($scriptNumber -eq 5 -or $scriptNumber -eq 99) {$ScriptList+="setMetascanPermissions.ps1"}
+			if ($scriptNumber -eq 6 -or $scriptNumber -eq 99) {$ScriptList+="registerAppCert.ps1"}
+			if ($scriptNumber -eq 7 -or $scriptNumber -eq 99) {$ScriptList+="createPushCenterAgentTask.ps1"}
+			if ($scriptNumber -eq 8 -or $scriptNumber -eq 99) {$ScriptList+="ConfigureInitiate.ps1"}
+			
+		# Additional scripts that may not end up in the final list 
 			#if ($scriptNumber -eq 13 -or $scriptNumber -eq 99) {$ScriptList+="SetSslRenegotiationFlag.ps1"}
-			
-# Additional scripts that may not end up in the final list
-# I will comment them out after verifying that they run.			
-			#if ($scriptNumber -eq 20 -or $scriptNumber -eq 99) {$ScriptList+="dotnetcharge.ps1"}
-			#if ($scriptNumber -eq 21 -or $scriptNumber -eq 99) {$ScriptList+="audit.ps1"}
-			#if ($scriptNumber -eq 22 -or $scriptNumber -eq 99) {$ScriptList+="wintertree.ps1"}
-			
-		    if (!($ScriptList)) {
+			#if ($scriptNumber -eq 9 -or $scriptNumber -eq 99) {$ScriptList+="SetFolderPermissions.ps1"}
+			#if ($scriptNumber -eq 7 -or $scriptNumber -eq 99) {$ScriptList+="createSharedFolders.ps1"}
+		    
+			if (!($ScriptList)) {
 			    Write-host -ForegroundColor Red "`nThe scriptNumber $scriptNumber entered does not match validation list, not running any scripts."
 			    exit
 		    }
+			
+			# get user/password via credentials popup
+			$destinationServer = [string]::Format("{0}", $machine.HwebName)
+			$currentexecuter= $machine.domain +"\"+"$currentuser"
+			$password=SetPassword -user $currentexecuter 
 			
 		    # Loop through the selected scripts
 		    foreach ($scriptName in $ScriptList) {
@@ -167,23 +167,20 @@ if ($machines.count) {
 			    if ($runLocal) {
 			    	$computer=Get-WmiObject -Class Win32_ComputerSystem
 				    $name=$computer.name
-				    #Write-host -ForegroundColor Magenta "Running locally on server $name"
+				    Write-host -ForegroundColor Magenta "Running locally on server $name"
 				    try 
 					{
 					    Invoke-Expression -command ".\$scriptName -EnvironmentConfig $config -MachineConfig $machine"
 					    write-host "Command execution successful"
 				    }
-				finally {}
+					finally {}
 			    }
-			else {
-				$destinationServer = [string]::Format("{0}", $machine.HwebName)
-				$currentexecuter= $machine.domain +"\"+"$currentuser"
-				$password=SetPassword -user $currentexecuter 
-				Write-host -ForegroundColor Magenta "Executing on remote server $destinationWinRMServer"
-				$argsList = $config,$machine
-				executeScriptFileInRemoteSession -filePath $scriptName -argsList $argsList -deployLoginame $currentexecuter -deployUserPassword $password -serverFQDN $destinationServer
-			}
-			Write-host -ForegroundColor Magenta "Script execution complete for $scriptName"
+				else {
+					Write-host -ForegroundColor Magenta "Executing on remote server $destinationServer"
+					$argsList = $config,$machine
+					executeScriptFileInRemoteSession -filePath $scriptName -argsList $argsList -deployLoginame $currentexecuter -deployUserPassword $password -serverFQDN $destinationServer
+				}
+				Write-host -ForegroundColor Magenta "Script execution complete for $scriptName"
 		}			
 	    }
 	}	
