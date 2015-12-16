@@ -68,7 +68,7 @@ Import-Module -Name .\PowerShellLogging\PowerShellLogging.psm1
 $filedate =(Get-Date).ToString("yyyyMMddhhmmss")
 $LogFileName = "$($env:computername)_" + $filedate + ".log"
 
-$LogFile = Enable-LogFile -Path $LogFileName
+$LogFile = Enable-LogFile -Path .\BuildoutLogs\$LogFileName
 
 # Check if current console has admin rights
 $isAdmin = $null
