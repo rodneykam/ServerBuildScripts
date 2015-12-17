@@ -154,10 +154,12 @@ if ($machines.count) {
 			    exit
 		    }
 			
-			# get user/password via credentials popup
-			$destinationServer = [string]::Format("{0}", $machine.HwebName)
-			$currentexecuter= $machine.domain +"\"+"$currentuser"
-			$password=SetPassword -user $currentexecuter 
+			if (!($runLocal)) {
+				# get user/password via credentials popup
+				$destinationServer = [string]::Format("{0}", $machine.HwebName)
+				$currentexecuter= $machine.domain +"\"+"$currentuser"
+				$password=SetPassword -user $currentexecuter 
+			}
 			
 		    # Loop through the selected scripts
 		    foreach ($scriptName in $ScriptList) {
@@ -170,7 +172,8 @@ if ($machines.count) {
 				    Write-host -ForegroundColor Magenta "Running locally on server $name"
 				    try 
 					{
-					    Invoke-Expression -command ".\$scriptName -EnvironmentConfig $config -MachineConfig $machine"
+					    $argsList = $config,$machine
+						Invoke-Expression -command ".\$scriptName -EnvironmentConfig $config -MachineConfig $machine"
 					    write-host "Command execution successful"
 				    }
 					finally {}

@@ -120,6 +120,13 @@ if ($path_var -notmatch "E:\\mpi\\product\\Engine8.7.0\\jre")
 $initiate_envsetfile = "E:\mpi\project\initiate\scripts\env.set.bat"
 if (-not(Test-Path -path $initiate_envsetfile))
 { 
+	# If E:\MPI\Project does not exist, copy from HWebSource folder
+	Write-host -ForegroundColor Yellow "Copying Initiate service folders"
+	copy-item -path $InitateSourceDir -destination $DestinationDir -recurse -force
+}
+
+if (-not(Test-Path -path $initiate_envsetfile))
+{ 
 	Write-host -ForegroundColor Red "Environment-specific settings file 'Env.set.bat' does not exist at location $initiate_envsetfile"
 	exit
 }
@@ -127,8 +134,8 @@ if (-not(Test-Path -path $initiate_envsetfile))
 # START Configure the SQL Alias so that Initiate can connect to the SQL Instance name on the specific port
 # Specify the database server parameters
 # Need to add $Server_DatabaseServer to the BuildoutConfig.config
-$ServerAlias =$Server_DatabaseServer+"ALIAS"
-$ServerName = $Server_DatabaseServer+"\i02"
+$ServerAlias =$Database+"ALIAS"
+$ServerName = $Database+"\i02"
 $Protocol="TCP"
 $PortNumber ="49102"
 $ip = [System.Net.Dns]::GetHostAddresses("$Server_DatabaseServer") | foreach {echo $_.IPAddressToString }
@@ -152,6 +159,7 @@ else
 }
 
 # Set up the SQL Server Alias in the registry
+write-host  -ForegroundColor Yellow "Set up the SQL Server Alias in the registry"
 $aliasValue = "DBMSSOCN,{0},{1}" -f $ServerName,$PortNumber
 
 if (!(test-path 'HKLM:\SOFTWARE\Microsoft\MSSQLServer\Client\ConnectTo'))
@@ -170,6 +178,8 @@ $envpattern=@("set MAD_DBSVR=*.*","set MAD_DBPORT=*.*","set MAD_DBPASS=*.*","set
 $envreplace=@("set MAD_DBSVR=$ServerAlias","set MAD_DBPORT=$PortNumber","set MAD_DBUSER=$Account","set MAD_DBPASS=$Password","set MAD_ENGUSER=$EnvAccount","set MAD_ENGPASS=$Password","set MAD_AUDIT=0","set MAD_DEBUG=0","set MAD_TRACE=0","set MAD_DBSQL=0","set MAD_RHPATH=","set MAD_DBPREFIX=$Prefix","set MAD_VER=DEFAULT","set MAD_DIR=","set MAD_DIRESC=")
 # END Configure the SQL Alias so that Initiate can connect to the SQL Instance name on the specific port
 
+
+write-host  -ForegroundColor Yellow "Updating Initiate MDE settings in $initiate_envsetfile"
 for ($i = 0 ; $i -le $envpattern.length - 1 ;$i++)
 {
 	(Get-Content $initiate_envsetfile) | 
@@ -196,6 +206,7 @@ popd
 $passsiveenvpattern=@("UsrPass=*.*","UsrName=*.*")
 $passsiveenvreplace=@("UsrPass=$PassivePassword","UsrName=$PassiveAccount")
 
+write-host  -ForegroundColor Yellow "Updating Passive Server settings in $initiate_passsivepropertiesfile"
 for ($i = 0 ; $i -le $passsiveenvpattern.length - 1 ;$i++)
 {
 	(Get-Content $initiate_passsivepropertiesfile) | 
@@ -206,12 +217,14 @@ for ($i = 0 ; $i -le $passsiveenvpattern.length - 1 ;$i++)
 sleep 3
 # Now apply the configuration to the Initiate MDE instance and create the service instance. 
 # This will remove and re-create any existing instance.
+write-host  -ForegroundColor Yellow "Starting initiatesetup.ps1"
 pushd E:\mpi\project\initiate\scripts
 ./initiatesetup.ps1 $Prefix
 
 sleep 2
 # Now apply the configuration to the Initiate Passive instance and create the service instance. 
 # This will remove and re-create any existing instance. Starts the Initiate services
+write-host  -ForegroundColor Yellow "Starting installpassive.bat"
 ./installpassive.bat
 popd
 
