@@ -45,9 +45,9 @@ if (!( test-path -Path C:\Buildout\PushCenterAgent.xml)) {
 	exit
 }
 
-Write-host -ForegroundColor Green "Running command: schtasks /Create /XML ./PushCenterAgent.xml /TN $taskName /RU `"$Account`" /RP `"xxxxx`" /F"
+Write-host -ForegroundColor Green "Running command: schtasks /Create /XML ./PushCenterAgent.xml /TN PushCenterAgent /RU `"$Account`" /RP `"xxxxx`" /F"
 # Note that the expression " 2>&1" pipes the command output into the return code $result
-$result = invoke-expression "schtasks /Create /XML ./PushCenterAgent.xml /TN $taskName /RU `"$Account`" /RP `"$Password`" /F 2>&1"
+$result = invoke-expression "schtasks /Create /XML ./PushCenterAgent.xml /TN PushCenterAgent /RU `"$Account`" /RP `"$Password`" /F 2>&1"
 $result
 
 if (($LastExitCode -ne 0) -or (!($result -match "SUCCESS"))) {
